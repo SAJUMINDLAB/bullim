@@ -423,6 +423,36 @@
   .catgrid button .ci { width: 50px; height: 50px; flex-basis: 50px; border-radius: 17px; }
   .catgrid button.on { background: none; color: var(--ink); }
   .catgrid button.on .ci { background: var(--navy); color: #fff; }
+  /* 구글 캘린더 일정 */
+  .cal-cell .evd { display: flex; gap: 2px; margin-top: auto; padding-top: 2px; }
+  .cal-cell .evd i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+  .ev-cost { margin-top: 10px; font-size: 12.5px; color: var(--muted); text-align: right; }
+  .ev-cost b { color: var(--ink); }
+  .ev-sec { margin-bottom: 6px; }
+  .ev-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 4px; }
+  .ev-head b { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .tx-head { margin-top: 12px; }
+  .ev-head button { border: 0; background: var(--soft); color: var(--icon); border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; }
+  .ev { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; }
+  .ev > i { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 10px; }
+  .ev .t { flex: 0 0 38px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .ev .grow { flex: 1; min-width: 0; }
+  .ev .grow b { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev .grow small { display: block; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev-btn { border: 0; background: var(--soft); color: var(--icon); border-radius: 9px; padding: 6px 9px; font-size: 12px; font-weight: 600; flex: 0 0 auto; }
+  .ev-btn.del.arm { background: var(--red); color: #fff; }
+  .ev-form { display: grid; gap: 8px; background: var(--soft); border-radius: 14px; padding: 10px; margin: 6px 0; }
+  .ev-form .input { background: #fff; font-size: 15px; padding: 10px 12px; }
+  .ev-row { display: flex; gap: 8px; align-items: center; }
+  .ev-row .input { flex: 1; min-width: 0; }
+  .ev-row #evTime { flex: 0 0 126px; }
+  .ev-allday { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--icon); white-space: nowrap; }
+  .ev-row .cancel { flex: 0 0 80px; border: 1px solid var(--line); background: #fff; border-radius: 12px; font-weight: 700; color: var(--muted); padding: 12px; }
+  .ev-row .save { flex: 1; margin: 0; padding: 12px; font-size: 15px; }
+  .ev-err { color: var(--red); font-size: 12.5px; }
+  .ev-connect { display: grid; gap: 6px; background: #f4f8ff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; color: var(--icon); line-height: 1.5; }
+  .ev-connect b { color: var(--ink); font-size: 14px; }
+  .ev-connect button { justify-self: start; border: 0; background: #1f2b4d; color: #fff; border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 13px; }
   /* 사진 보관 */
   .ph-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .ph-th { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: var(--soft); position: relative; display: block; }
@@ -799,7 +829,7 @@
     clientId: "560373677903-k6tr86mphrcqa7330v0gkkp0reb414ph.apps.googleusercontent.com",
     sheetId: "10rbJw0H3DmN5Tz9nFhrYMEQiJ-Ylx_rmGT-qsmlzjM0",
     ledgerSheetId: 472346146,
-    scope: "https://www.googleapis.com/auth/spreadsheets"
+    scope: "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly"
   };
   var API = "https://sheets.googleapis.com/v4/spreadsheets/" + CFG.sheetId;
   var TOK = "bullim_tok";
@@ -836,6 +866,7 @@
     var st = null; try { st = sessionStorage.getItem("bullim_state"); } catch (e) {}
     if (st && p.get("state") !== st) return "error";
     try { localStorage.setItem(TOK, JSON.stringify({ v: p.get("access_token"), exp: Date.now() + (Number(p.get("expires_in")) || 3600) * 1000 })); } catch (e) {}
+    store("bullim_scope", p.get("scope") || "");
     store("bullim_seen", "1");
     return "ok";
   }
@@ -1442,25 +1473,29 @@
     for (var k = 0; k < first; k++) cells += '<div class="cal-cell out"></div>';
     for (var d = 1; d <= days; d++) {
       var ds = ym + "-" + String(d).padStart(2, "0"), dow = (first + d - 1) % 7, o = by[ds];
-      var c = "cal-cell" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "") + (ds === D.today ? " today" : "") + (ds === selDay ? " sel" : "");
+      var hol = calReady() && calHolidayOn(ds);
+      var c = "cal-cell" + (dow === 0 || hol ? " sun" : dow === 6 ? " sat" : "") + (ds === D.today ? " today" : "") + (ds === selDay ? " sel" : "");
       cells += '<button class="' + c + '" data-day="' + ds + '"><span class="d">' + d + "</span>" + (phReady() && photosOn(ds).length ? '<span class="phc">' + svgIcon("카메라", 11) + "</span>" : "") +
         (o && o.i ? '<span class="i num">+' + calAmt(o.i) + "</span>" : "") +
         (o && o.e ? '<span class="e num">−' + calAmt(o.e) + "</span>" : "") +
-        (o && o.s ? '<span class="s num">' + calAmt(o.s) + "</span>" : "") + "</button>";
+        (o && o.s ? '<span class="s num">' + calAmt(o.s) + "</span>" : "") + (calReady() ? calCellHtml(ds) : "") + "</button>";
     }
     var inc = monthSum("수입", ym), exp = monthSum("지출", ym), sav = monthSum("저축/투자", ym);
     var left = '<div class="card"><h2>' + esc(ymLabel(ym)) + ' 달력<span class="sub"><b style="color:var(--green)">수입</b> · <b style="color:var(--red)">지출</b> · <b style="color:var(--blue)">저축/투자</b></span></h2>' +
       '<div class="cal-head">' + "일월화수목금토".split("").map(function (w) { return "<div>" + w + "</div>"; }).join("") + "</div>" +
       '<div class="cal-grid">' + cells + "</div>" +
-      '<div class="cal-sum">' + tile("수입", sumAmt(inc), "var(--green)") + tile("지출", sumAmt(exp), "var(--red)") + tile("남은 돈", sumAmt(inc - exp - sav), "var(--navy)") + "</div></div>";
+      '<div class="cal-sum">' + tile("수입", sumAmt(inc), "var(--green)") + tile("지출", sumAmt(exp), "var(--red)") + tile("남은 돈", sumAmt(inc - exp - sav), "var(--navy)") + "</div>" +
+      (calReady() && calMonthCost(ym) ? '<div class="ev-cost">이번 달 일정 예상 비용 <b class="num">' + won(calMonthCost(ym)) + "</b></div>" : "") + "</div>";
     var rows = D.ledger.filter(function (x) { return x.date === selDay; }).sort(function (p, q) { return q.row - p.row; });
     var sd = new Date(selDay + "T00:00:00");
-    var right = '<div class="card"><h2>' + (+selDay.slice(5, 7)) + "월 " + (+selDay.slice(8)) + "일 (" + "일월화수목금토"[sd.getDay()] + ')<span class="sub">' + rows.length + "건</span></h2>" +
+    var right = '<div class="card"><h2>' + (+selDay.slice(5, 7)) + "월 " + (+selDay.slice(8)) + "일 (" + "일월화수목금토"[sd.getDay()] + ')<span class="sub">' + rows.length + "건</span></h2>" + calDayHtml(selDay) +
+      (calReady() && calHasScope() ? '<div class="ev-head tx-head"><b>내역</b></div>' : "") +
       (rows.length ? rows.map(txLine).join("") : '<div class="empty">이 날은 내역이 없어요.</div>') +
       phDayHtml(selDay) + '<button class="go-add" data-go-add="' + selDay + '">＋ 이 날짜로 입력하기</button></div>';
     $("calWrap").innerHTML = left + right + trendCard();
     phHydrate($("calWrap"));
     fitCalSum();
+    calLoad(ym);
   }
   // 월별 추이: 고른 달까지 최근 12개월 수입·지출·저축 막대 + 지난달보다 많이 늘어난 지출 분류
   function trendCard() {
@@ -2154,6 +2189,140 @@
   }
   // PHOTO-END
 
+  // CAL-START ---------- 구글 캘린더 (우리집 공유 캘린더 + 각자 캘린더) ----------
+  // 로그인한 계정으로 구글 캘린더를 직접 읽고 써요 (깃허브 버전에서만). 예상 비용은 일정의 공유 속성 bullimCost에 저장.
+  var CAL = { list: null, ev: {}, busy: {}, err: "", adding: false, addErr: "" };
+  function calReady() { return typeof token === "function" && typeof signIn === "function"; }
+  function calHasScope() { return /calendar\.events/.test(store("bullim_scope") || ""); }
+  function calFetch(path, opt) {
+    opt = opt || {};
+    var t = token();
+    if (!t) { signIn(); return new Promise(function () {}); }
+    return fetch("https://www.googleapis.com/calendar/v3" + path, {
+      method: opt.method || "GET", headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+      body: opt.body ? JSON.stringify(opt.body) : undefined
+    }).then(function (r) {
+      if (r.status === 401) { try { localStorage.removeItem("bullim_tok"); } catch (e) {} signIn(); return new Promise(function () {}); }
+      if (r.status === 204) return {};
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (r.status === 403 && /insufficient|scope|PERMISSION/i.test(JSON.stringify(j))) { store("bullim_scope", ""); var e = new Error("NEED_AUTH"); e.needAuth = true; throw e; }
+        if (!r.ok) throw new Error((j.error && j.error.message) || ("캘린더 오류 " + r.status));
+        return j;
+      });
+    });
+  }
+  function calIsHoliday(c) { return /holiday/i.test(c.id || ""); }
+  function calLoadList() {
+    if (CAL.list) return Promise.resolve(CAL.list);
+    return calFetch("/users/me/calendarList?minAccessRole=reader&maxResults=100").then(function (j) {
+      CAL.list = (j.items || []).filter(function (c) { return c.selected !== false && !c.hidden; }).map(function (c) {
+        return { id: c.id, name: c.summaryOverride || c.summary || "캘린더", color: c.backgroundColor || "#8b95a1", primary: !!c.primary,
+          canEdit: c.accessRole === "owner" || c.accessRole === "writer", holiday: calIsHoliday(c) };
+      });
+      return CAL.list;
+    });
+  }
+  function calDefault() {
+    var w = (CAL.list || []).filter(function (c) { return c.canEdit; });
+    return (w.filter(function (c) { return /우리집/.test(c.name); })[0] || w.filter(function (c) { return c.primary; })[0] || w[0] || {}).id || "";
+  }
+  function calCost(e) {
+    var s = e.extendedProperties && e.extendedProperties.shared && e.extendedProperties.shared.bullimCost;
+    if (s) return Number(s) || 0;
+    var m = String(e.description || "").match(/예상\s*비용\s*[:：]?\s*([\d,]+)/);
+    return m ? Number(m[1].replace(/,/g, "")) || 0 : 0;
+  }
+  function calAddDays(ds, n) { var d = new Date(ds + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function calLoad(m) {
+    if (!calReady() || !calHasScope() || CAL.ev[m] || CAL.busy[m]) return;
+    CAL.busy[m] = true; CAL.err = "";
+    var t0 = m + "-01T00:00:00+09:00", t1 = shiftYm(m, 1) + "-01T00:00:00+09:00";
+    calLoadList().then(function (cals) {
+      return Promise.all(cals.map(function (c) {
+        return calFetch("/calendars/" + encodeURIComponent(c.id) + "/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=" + encodeURIComponent(t0) + "&timeMax=" + encodeURIComponent(t1))
+          .then(function (j) { return (j.items || []).filter(function (e) { return e.status !== "cancelled"; }).map(function (e) {
+            var allDay = !!(e.start && e.start.date), sd = allDay ? e.start.date : String(e.start && e.start.dateTime || "").slice(0, 10);
+            return { id: e.id, cal: c.id, calName: c.name, color: c.color, canEdit: c.canEdit, holiday: c.holiday, title: e.summary || "(제목 없음)",
+              date: sd, end: allDay ? calAddDays(e.end.date, -1) : sd, allDay: allDay,
+              time: allDay ? "" : String(e.start.dateTime).slice(11, 16), cost: calCost(e), loc: e.location || "" };
+          }); })
+          .catch(function (err) { if (err.needAuth) throw err; return []; });
+      }));
+    }).then(function (arr) {
+      CAL.ev[m] = [].concat.apply([], arr);
+    }).catch(function (err) {
+      if (err.needAuth) CAL.ev = {}; else CAL.err = err.message || String(err);
+    }).then(function () { CAL.busy[m] = false; if (m === ym && D) renderCal(); });
+  }
+  function evOn(ds) {
+    return (CAL.ev[ds.slice(0, 7)] || []).filter(function (e) { return e.date <= ds && ds <= e.end; })
+      .sort(function (p, q) { return (p.allDay ? "" : p.time) < (q.allDay ? "" : q.time) ? -1 : 1; });
+  }
+  function calCellHtml(ds) {
+    var ev = evOn(ds).filter(function (e) { return !e.holiday; });
+    return ev.length ? '<span class="evd">' + ev.slice(0, 4).map(function (e) { return '<i style="background:' + esc(e.color) + '"></i>'; }).join("") + "</span>" : "";
+  }
+  function calHolidayOn(ds) { return evOn(ds).filter(function (e) { return e.holiday; })[0]; }
+  function calMonthCost(m) { return (CAL.ev[m] || []).reduce(function (s, e) { return s + (e.cost || 0); }, 0); }
+  function calDayHtml(ds) {
+    if (!calReady()) return "";
+    if (!calHasScope()) return '<div class="ev-connect"><b>구글 캘린더 연결</b><span>우리집 캘린더 일정을 여기서 같이 보고 추가할 수 있어요. 처음 한 번 다시 로그인하고 캘린더를 허용해 주세요.</span><button type="button" id="calConnect">캘린더 연결하기</button></div>';
+    var m = ds.slice(0, 7), list = evOn(ds);
+    var h = '<div class="ev-sec"><div class="ev-head"><b>일정</b>' + (CAL.list && calDefault() ? '<button type="button" id="evAddBtn">＋ 일정</button>' : "") + "</div>";
+    if (!CAL.ev[m]) h += '<div class="empty">' + (CAL.err ? esc(CAL.err) : "일정 불러오는 중…") + "</div>";
+    else if (!list.length && !CAL.adding) h += '<div class="empty">이 날은 일정이 없어요.</div>';
+    h += list.map(function (e) {
+      return '<div class="ev"><i style="background:' + esc(e.color) + '"></i><span class="t">' + (e.allDay ? "종일" : esc(e.time)) + '</span><span class="grow"><b>' + esc(e.title) + "</b><small>" +
+        esc(e.calName) + (e.cost ? " · 예상 " + won(e.cost) : "") + (e.loc ? " · " + esc(e.loc) : "") + "</small></span>" +
+        (e.holiday ? "" : '<button type="button" class="ev-btn" data-ev-spend="' + esc(e.id) + '">지출 입력</button>') +
+        (e.canEdit && !e.holiday ? '<button type="button" class="ev-btn del" data-ev-del="' + esc(e.id) + '">삭제</button>' : "") + "</div>";
+    }).join("");
+    if (CAL.adding) {
+      var w = (CAL.list || []).filter(function (c) { return c.canEdit && !c.holiday; }), def = calDefault();
+      h += '<div class="ev-form"><input class="input" id="evTitle" placeholder="일정 이름 (예: 슬기 생일, 친구 결혼식)" autocomplete="off">' +
+        '<div class="ev-row"><label class="ev-allday"><input type="checkbox" id="evAllDay" checked> 종일</label><input class="input" type="time" id="evTime" value="12:00" disabled>' +
+        '<select class="input" id="evCal">' + w.map(function (c) { return "<option value=\"" + esc(c.id) + "\"" + (c.id === def ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join("") + "</select></div>" +
+        '<input class="input num" id="evCost" inputmode="numeric" placeholder="예상 비용 (선택, 원)" autocomplete="off">' +
+        (CAL.addErr ? '<div class="ev-err">' + esc(CAL.addErr) + "</div>" : "") +
+        '<div class="ev-row"><button type="button" class="cancel" id="evCancel">취소</button><button type="button" class="save" id="evSave">일정 저장</button></div></div>';
+    }
+    return h + "</div>";
+  }
+  function calFindEv(id) { return (CAL.ev[selDay.slice(0, 7)] || []).filter(function (e) { return e.id === id; })[0]; }
+  function calSave(b) {
+    var title = ($("evTitle").value || "").trim(); if (!title) { toast("일정 이름을 적어 주세요."); return; }
+    var allDay = $("evAllDay").checked, time = $("evTime").value || "12:00", cal = $("evCal").value;
+    var cost = Number(String($("evCost").value || "").replace(/[^\d]/g, "")) || 0;
+    var body = { summary: title };
+    if (allDay) body.start = { date: selDay }, body.end = { date: calAddDays(selDay, 1) };
+    else {
+      var hh = +time.slice(0, 2), mm = time.slice(3, 5), endH = String(Math.min(23, hh + 1)).padStart(2, "0");
+      body.start = { dateTime: selDay + "T" + time + ":00", timeZone: "Asia/Seoul" };
+      body.end = { dateTime: selDay + "T" + endH + ":" + (hh >= 23 ? "59" : mm) + ":00", timeZone: "Asia/Seoul" };
+    }
+    if (cost) { body.description = "예상 비용: " + num(cost) + "원 (불림)"; body.extendedProperties = { shared: { bullimCost: String(cost) } }; }
+    b.disabled = true; b.textContent = "저장 중…"; CAL.addErr = "";
+    calFetch("/calendars/" + encodeURIComponent(cal) + "/events", { method: "POST", body: body }).then(function () {
+      CAL.adding = false; delete CAL.ev[selDay.slice(0, 7)]; toast("일정을 넣었어요"); renderCal();
+    }).catch(function (err) { CAL.addErr = err.needAuth ? "캘린더 권한이 필요해요. '캘린더 연결하기'를 눌러 주세요." : (err.message || String(err)); renderCal(); });
+  }
+  function calDelete(b) {
+    if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent = "정말 삭제"; return; }
+    var e = calFindEv(b.dataset.evDel); if (!e) return;
+    b.textContent = "지우는 중…";
+    calFetch("/calendars/" + encodeURIComponent(e.cal) + "/events/" + encodeURIComponent(e.id), { method: "DELETE" })
+      .then(function () { delete CAL.ev[selDay.slice(0, 7)]; toast("일정을 지웠어요"); renderCal(); })
+      .catch(function (err) { toast(err.message || String(err)); renderCal(); });
+  }
+  function calSpend(id) {   // 일정 → 가계부 입력 화면 (날짜·내용·예상 비용 채움)
+    var e = calFindEv(id); if (!e) return;
+    showView("add");
+    $("fDate").value = selDay; $("fDesc").value = e.title; if (e.cost) $("fAmt").value = e.cost;
+    amtHint(); sugCompute();
+    toast("일정 내용으로 채웠어요. 대분류·금액을 확인하고 저장하세요.");
+  }
+  // CAL-END
+
   // ---------- events ----------
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
@@ -2163,7 +2332,13 @@
       return;
     }
     if (b.dataset.view) { if (editing) { editing = null; clearForm(); renderForm(); } showView(b.dataset.view); return; }
-    if (b.dataset.day) { selDay = b.dataset.day; renderCal(); return; }
+    if (b.dataset.day) { selDay = b.dataset.day; CAL.adding = false; renderCal(); return; }
+    if (b.id === "calConnect") { signIn(false); return; }
+    if (b.id === "evAddBtn") { CAL.adding = true; CAL.addErr = ""; renderCal(); if ($("evTitle")) $("evTitle").focus(); return; }
+    if (b.id === "evCancel") { CAL.adding = false; renderCal(); return; }
+    if (b.id === "evSave") { calSave(b); return; }
+    if (b.dataset.evSpend) { calSpend(b.dataset.evSpend); return; }
+    if (b.dataset.evDel) { calDelete(b); return; }
     if (b.dataset.ph) {
       var ids = [].map.call((b.closest(".ph-row") || b.parentNode).querySelectorAll("[data-ph]"), function (y) { return y.dataset.ph; });
       var lst = ids.map(function (id) { return (D.photos || []).filter(function (q) { return q.id === id; })[0]; }).filter(Boolean);
@@ -2193,7 +2368,7 @@
     }
     if (b.dataset.goAdd) { $("fDate").value = b.dataset.goAdd; showView("add"); return; }
     if (b.id === "prevM" || b.id === "nextM") { ym = shiftYm(ym, b.id === "prevM" ? -1 : 1); render(); return; }
-    if (b.id === "refresh") { $("loading").classList.remove("hide"); load("새로 불러왔어요"); return; }
+    if (b.id === "refresh") { CAL.ev = {}; CAL.list = null; $("loading").classList.remove("hide"); load("새로 불러왔어요"); return; }
     if (b.dataset.filter) { listFilter = b.dataset.filter; renderListBody(); return; }
     if (b.id === "listQx") { listQ = ""; $("listQ").value = ""; renderListBody(); $("listQ").focus(); return; }
     if (b.dataset.rvSave) { saveReview(+b.dataset.rvSave, b); return; }
@@ -2237,6 +2412,7 @@
       aiLoadImage(e.target.files[0]).then(function (u) { aiAddS.img = u; aiAddS.msg = "사진을 올렸어요. 'AI로 채우기'를 눌러 주세요."; renderAiAdd(); })
         .catch(function (err) { toast(err.message || "사진을 열지 못했어요"); });
     }
+    if (e.target.id === "evAllDay" && $("evTime")) $("evTime").disabled = e.target.checked;
     if (e.target.id === "phFile") { phAddFiles(e.target.files, function (arr) { form.photos = (form.photos || []).concat(arr); renderForm(); }); e.target.value = ""; }
     if (e.target.id === "phDayFile") {
       var day = selDay;
