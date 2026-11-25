@@ -113,7 +113,7 @@
   /* 내역 탭: 검색 + 이번 달 돌아보기 (폰은 위 버튼으로 바꿔 보기, PC는 나란히) */
   .list-seg { margin-bottom: 12px; }
   .list-wrap { display: grid; gap: 14px; grid-template-columns: 1fr; align-items: start; }
-  .list-wrap.m-list #reviewCard, .list-wrap.m-review #listCard { display: none; }
+  .list-wrap.m-list #reviewCard, .list-wrap.m-list #aiCard, .list-wrap.m-review #listCard, .list-wrap.m-review #aiCard, .list-wrap.m-ai #listCard, .list-wrap.m-ai #reviewCard { display: none; }
   .search { position: relative; margin-bottom: 10px; }
   .search .input { padding: 11px 38px 11px 38px; font-size: 15px; background: var(--soft); }
   .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
@@ -278,7 +278,9 @@
   @media (min-width: 1000px) {
     .list-seg { display: none; }
     .list-wrap { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; }
-    .list-wrap.m-list #reviewCard, .list-wrap.m-review #listCard { display: block; }
+    .list-wrap > .card { display: block !important; }
+    .list-wrap #listCard { grid-row: span 2; }
+    .list-wrap #aiCard { grid-column: 2; }
     main { max-width: 1880px; padding: 24px 28px 40px; }
     .grid { gap: 20px; }
     /* 홈 = 한 화면 대시보드 (3칸) */
@@ -399,6 +401,8 @@
   .tx .amt { font-size: 15px; font-weight: 700; }
   .tx .btns { display: none; flex-direction: row; gap: 4px; }
   .tx.open .btns { display: flex; }
+  .tx.open { flex-wrap: wrap; }
+  .tx.open .btns { flex-basis: 100%; justify-content: flex-end; margin-top: 2px; padding-left: 52px; }
   .tx.open { background: var(--soft); margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
   .edit, .del { background: #fff; color: var(--icon); font-weight: 600; padding: 7px 10px; border-radius: 10px; }
   .day { font-size: 13px; font-weight: 600; color: var(--muted); margin: 18px 0 2px; }
@@ -419,6 +423,72 @@
   .catgrid button .ci { width: 50px; height: 50px; flex-basis: 50px; border-radius: 17px; }
   .catgrid button.on { background: none; color: var(--ink); }
   .catgrid button.on .ci { background: var(--navy); color: #fff; }
+  /* 사진 보관 */
+  .ph-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ph-th { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: var(--soft); position: relative; display: block; }
+  .ph-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph-th .x { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; line-height: 1; padding: 0; }
+  .ph-add { width: 64px; height: 64px; border-radius: 12px; border: 1.5px dashed #cfd5dd; display: grid; place-items: center; color: var(--muted); cursor: pointer; background: #fff; }
+  .field .ph-add { display: grid; margin: 0; font-size: 0; }
+  .ph-mark { display: inline-flex; align-items: center; margin-left: 6px; color: #c99000; vertical-align: -1px; }
+  .ph-day { margin-top: 14px; }
+  .ph-day b { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+  .cal-cell { position: relative; }
+  .cal-cell .phc { position: absolute; top: 5px; right: 5px; color: #d9a200; line-height: 0; }
+  .ph-view { position: fixed; inset: 0; z-index: 90; background: #0e1014; display: none; flex-direction: column; }
+  .ph-view.on { display: flex; }
+  .ph-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #e9ecf1; padding: calc(12px + env(safe-area-inset-top)) 16px 8px; font-size: 13px; }
+  .ph-top button { background: none; border: 0; color: #fff; font-size: 30px; line-height: 1; padding: 0 4px; }
+  .ph-img { flex: 1; min-height: 0; display: grid; place-items: center; padding: 0 10px; position: relative; }
+  .ph-img img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+  #phLoading { position: absolute; color: #9aa3b2; font-size: 13px; }
+  .ph-bot { display: flex; align-items: center; gap: 12px; padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); color: #fff; }
+  .ph-bot button { background: rgba(255,255,255,.12); border: 0; color: #fff; border-radius: 12px; padding: 10px 16px; font-size: 16px; }
+  #phCount { font-size: 13px; color: #c7ccd6; min-width: 44px; text-align: center; }
+  #phDel { margin-left: auto; font-size: 14px; }
+  #phDel.arm { background: #f04452; }
+  /* AI */
+  .ai-box { margin-bottom: 14px; background: linear-gradient(180deg, #fffaf0 0%, #ffffff 70%); }
+  .ai-mark { color: #e2a400; margin-right: 2px; }
+  .ai-box.closed { padding-top: 14px; padding-bottom: 14px; background: #fffaf0; }
+  .ai-head { width: 100%; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; color: var(--ink); text-align: left; font-size: 16px; min-width: 0; }
+  .ai-head b { font-weight: 700; white-space: nowrap; }
+  .ai-head .sub { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .ai-head svg { flex: 0 0 18px; color: var(--muted); transition: transform .2s; }
+  .ai-head[aria-expanded="true"] { margin-bottom: 12px; }
+  .ai-head[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .ai-guide { font-size: 13px; line-height: 1.6; color: var(--icon); background: var(--soft); border-radius: 14px; padding: 12px 14px; }
+  .ai-text { resize: none; min-height: 52px; font-size: 15px; line-height: 1.5; }
+  .ai-row { display: flex; gap: 8px; margin-top: 8px; }
+  .ai-photo { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; background: var(--soft); color: var(--icon); border-radius: 12px; padding: 0 14px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .ai-go { flex: 1; border: 0; border-radius: 12px; background: linear-gradient(135deg, #ffd45c, #f5a623); color: #3a2800; font-weight: 800; font-size: 15px; padding: 12px 14px; }
+  .ai-go:disabled { opacity: .6; }
+  .ai-thumb { position: relative; display: inline-block; margin-top: 8px; }
+  .ai-thumb img { max-height: 140px; max-width: 100%; border-radius: 12px; display: block; }
+  .ai-thumb button { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 16px; line-height: 1; }
+  .ai-msg { font-size: 13px; color: var(--icon); margin-top: 10px; line-height: 1.5; }
+  .ai-list { margin: 8px 0 10px; }
+  .ai-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .ai-item:last-child { border-bottom: 0; }
+  .ai-item input { width: 18px; height: 18px; flex: 0 0 18px; accent-color: #1f2b4d; }
+  .ai-item .ci { width: 32px; height: 32px; flex-basis: 32px; border-radius: 11px; }
+  .ai-item .grow { flex: 1; min-width: 0; }
+  .ai-item .grow small { display: block; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ai-item .amt { font-weight: 700; white-space: nowrap; }
+  .ai-one { border: 0; background: var(--soft); color: var(--icon); border-radius: 9px; padding: 6px 9px; font-size: 12px; font-weight: 600; }
+  .chat { display: flex; flex-direction: column; gap: 8px; max-height: 440px; overflow-y: auto; padding: 2px; }
+  .bub { padding: 10px 13px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 88%; word-break: keep-all; }
+  .bub.me { align-self: flex-end; background: #1f2b4d; color: #fff; border-bottom-right-radius: 5px; }
+  .bub.ai { align-self: flex-start; background: var(--soft); border-bottom-left-radius: 5px; }
+  .bub.typing { color: var(--muted); }
+  .ai-q { margin: 10px 0 0; }
+  .ai-q .chip { font-size: 12.5px; padding: 6px 11px; }
+  .chat-in { display: flex; gap: 8px; margin-top: 8px; align-items: flex-end; }
+  .chat-in textarea { flex: 1; resize: none; min-height: 46px; font-size: 15px; }
+  .chat-in .ai-go { flex: 0 0 auto; padding: 13px 16px; }
+  .ai-say { background: #fffaf0; border: 1px solid #f6e3b4; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.65; margin-bottom: 8px; }
+  .ai-say small { display: block; color: var(--muted); font-size: 11px; margin-top: 6px; }
+  .ai-rv { width: auto; flex: none; padding: 9px 14px; font-size: 13px; }
   .sug { margin-top: 8px; }
   .sug:empty { display: none; }
   .sug-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e3e7ee; background: #fff; border-radius: 999px; padding: 5px 12px 5px 5px; font-size: 13px; color: var(--ink); max-width: 100%; }
@@ -496,11 +566,11 @@
 <main>
   <section id="view-home" class="view on"><div class="grid" id="homeGrid"></div></section>
   <section id="view-invest" class="view"><div class="grid" id="investGrid"></div></section>
-  <section id="view-add" class="view"><div class="card form" id="addForm"></div></section>
+  <section id="view-add" class="view"><div class="card form ai-box" id="aiAdd"></div><div class="card form" id="addForm"></div></section>
   <section id="view-cal" class="view"><div class="cal-wrap" id="calWrap"></div></section>
   <section id="view-list" class="view">
-    <div class="seg list-seg" id="listSeg"><button type="button" data-v="list" class="on">내역 · 검색</button><button type="button" data-v="review">이번 달 돌아보기</button></div>
-    <div class="list-wrap" id="listWrap"><div class="card" id="listCard"></div><div class="card rv-card" id="reviewCard"></div></div>
+    <div class="seg list-seg" id="listSeg"><button type="button" data-v="list" class="on">내역 · 검색</button><button type="button" data-v="review">돌아보기</button><button type="button" data-v="ai">✦ AI에게 묻기</button></div>
+    <div class="list-wrap" id="listWrap"><div class="card" id="listCard"></div><div class="card rv-card" id="reviewCard"></div><div class="card ai-card" id="aiCard"></div></div>
   </section>
 </main>
 <div id="toast"></div>
@@ -509,7 +579,7 @@
 (function () {
   "use strict";
   var D = null, ym = null, listFilter = "전체";
-  var form = { group: "지출", cat: "", item: "", currency: "KRW" };
+  var form = { group: "지출", cat: "", item: "", currency: "KRW", photos: [] };
   var editing = null;   // 수정 중인 내역 {row, date, desc, who, pay, back}
 
   // ---------- helpers ----------
@@ -797,7 +867,7 @@
   var NAMES = ["W_LEDGER", "W_CATS", "W_ITEMS", "W_MEMBERS", "W_PAYS", "W_OTHER", "W_HOLDINGS", "W_CARDS",
     "W_DIV_KPI", "W_DIV_MONTH", "W_DIV_BY", "W_NW_HIST", "W_GOALS", "W_PENSION", "NET_WORTH", "W_TOTAL_ASSET",
     "W_DEBT", "W_FX", "W_CASH", "W_US_VALUE", "W_KR_VALUE", "W_US_USD_RET", "INVEST_COST", "INVEST_VALUE",
-    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON"];
+    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS"];
   function apiGetData() {
     var q = NAMES.map(function (x) { return "ranges=" + enc(x); }).join("&");
     return gapi("GET", "/values:batchGet?" + q + "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER")
@@ -838,6 +908,14 @@
     var kpi = V.W_DIV_KPI[0] || [];
     return {
       today: todaySeoul(), me: "",
+      aiKey: s_(one_raw_(V, "W_AI_KEY")).trim(),
+      photoUrl: s_(one_raw_(V, "W_PHOTO_URL")).trim(),
+      // 사진 탭: B날짜 C누가 D내용 E금액 F사진ID G작은사진ID H설명 I올린시각
+      photos: (V.W_PHOTOS || []).map(function (r, i) {
+        r = pad_(r, 8);
+        return { row: 4 + i, date: typeof r[0] === "number" ? d_(r[0]) : s_(r[0]).slice(0, 10), who: s_(r[1]), desc: s_(r[2]),
+          amount: r[3] === "" ? "" : n_(r[3]), id: s_(r[4]), thumb: s_(r[5]), caption: s_(r[6]), at: s_(r[7]) };
+      }).filter(function (p) { return p.id; }),
       asset: {
         netWorth: one_(V, "NET_WORTH"), total: one_(V, "W_TOTAL_ASSET"), debt: one_(V, "W_DEBT"), fx: one_(V, "W_FX"),
         cash: one_(V, "W_CASH"), usValue: one_(V, "W_US_VALUE"), krValue: one_(V, "W_KR_VALUE"), usUsdRet: one_(V, "W_US_USD_RET"),
@@ -939,6 +1017,32 @@
     }).then(sortLedger_).then(apiGetData);
   }
 
+  /** 여러 건 한 번에 저장 (AI로 입력) — 빈 줄을 찾아 한 번에 쓰고 정렬은 한 번만 */
+  function apiAddMany(list) {
+    list = (list || []).filter(function (t) { return t && t.date && t.cat && Number(t.amount); });
+    if (!list.length) return Promise.reject(new Error("저장할 내역이 없어요."));
+    return gapi("GET", "/values/" + enc("'내역입력'!B4:B1003") + "?valueRenderOption=UNFORMATTED_VALUE").then(function (j) {
+      var col = j.values || [], free = [];
+      for (var i = 0; i < 1000 && free.length < list.length; i++) { var v = col[i] && col[i][0]; if (v === undefined || v === "") free.push(4 + i); }
+      if (free.length < list.length) throw new Error("내역입력 탭에 빈 줄이 모자라요.");
+      var data = list.map(function (t, k) {
+        var usd = t.currency === "USD", amt = Number(t.amount);
+        return { range: "'내역입력'!B" + free[k] + ":K" + free[k],
+          values: [[t.date, txt_(t.who), txt_(t.cat), txt_(t.item), txt_(t.desc), usd ? "" : amt, usd ? amt : "", txt_(t.pay), txt_(t.recv), txt_(t.memo)]] };
+      });
+      return gapi("POST", "/values:batchUpdate", { valueInputOption: "USER_ENTERED", data: data });
+    }).then(sortLedger_).then(apiGetData);
+  }
+
+  /** 내역을 고치면 붙어 있던 사진(사진 탭 줄)의 날짜·누가·내용·금액도 같이 바꿈 */
+  function apiRelinkPhotos(rows, t) {
+    var data = (rows || []).map(function (row) {
+      return { range: "'사진'!B" + row + ":E" + row, values: [[t.date, txt_(t.who), txt_(t.desc), t.amount === "" ? "" : Number(t.amount)]] };
+    });
+    if (!data.length) return apiGetData();
+    return gapi("POST", "/values:batchUpdate", { valueInputOption: "USER_ENTERED", data: data }).then(apiGetData);
+  }
+
   /** 이번 달 돌아보기 한 줄 메모: 같은 달·같은 사람 줄이 있으면 고치고, 없으면 첫 빈 줄에 */
   function apiSaveReview(month, who, memo) {
     return gapi("GET", "/values/W_REVIEW?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER").then(function (j) {
@@ -957,7 +1061,7 @@
     }).then(apiGetData);
   }
 
-  var API_FN = { getData: apiGetData, addTransaction: apiAdd, deleteTransaction: apiDelete, updateTransaction: apiUpdate, saveReview: apiSaveReview };
+  var API_FN = { getData: apiGetData, addTransaction: apiAdd, deleteTransaction: apiDelete, updateTransaction: apiUpdate, saveReview: apiSaveReview, addTransactions: apiAddMany, relinkPhotos: apiRelinkPhotos };
   function call(fn, args, ok) {
     if (window.__MOCK__) { setTimeout(function () { ok(window.__MOCK__); }, 10); return; }
     API_FN[fn].apply(null, args || []).then(ok).catch(function (e) {
@@ -983,7 +1087,7 @@
   // ---------- render ----------
   function render() {
     $("monthLabel").textContent = ymLabel(ym);
-    renderHome(); renderInvest(); renderCal(); renderList(); renderForm();
+    renderHome(); renderInvest(); renderCal(); renderList(); renderForm(); renderAiAdd();
   }
   function isPC() { return window.innerWidth >= 1000; }
   // PC에서는 화면 폭에 맞춰 전체를 크게 (1280px 기준, 최대 2배)
@@ -1320,9 +1424,9 @@
   function calAmt(n) { return isPC() ? num(n) : n >= 1e4 ? (n / 1e4).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, "") + "만" : num(n); }
   function txLine(x) {
     var usd = x.usd !== "" && x.usd ? ' <span class="muted">($' + Number(x.usd).toFixed(2) + ")</span>" : "";
-    return '<div class="list-line tx">' + ci(x.cat) + '<div class="grow"><b>' + esc(x.desc || x.item || x.cat) + '</b><div class="s">' + esc([x.cat, x.item].filter(Boolean).join(" · ")) + " · " + esc(x.who) + " · " + esc(x.pay) + (x.recv ? " → " + esc(x.recv) : "") + (x.memo ? " · " + esc(x.memo) : "") + "</div></div>" +
+    return '<div class="list-line tx">' + ci(x.cat) + '<div class="grow"><b>' + esc(x.desc || x.item || x.cat) + phMark(x) + '</b><div class="s">' + esc([x.cat, x.item].filter(Boolean).join(" · ")) + " · " + esc(x.who) + " · " + esc(x.pay) + (x.recv ? " → " + esc(x.recv) : "") + (x.memo ? " · " + esc(x.memo) : "") + "</div></div>" +
       '<span class="amt num t-' + esc(x.type) + '">' + (x.type === "지출" ? "−" : x.type === "수입" ? "+" : "") + num(x.amt) + usd + "</span>" +
-      '<span class="btns"><button class="edit" data-row="' + x.row + '">수정</button>' +
+      '<span class="btns">' + phTxBtn(x) + '<button class="edit" data-row="' + x.row + '">수정</button>' +
       '<button class="del" data-row="' + x.row + '" data-date="' + esc(x.date) + '" data-desc="' + esc(x.desc) + '">삭제</button></span></div>';
   }
   function renderCal() {
@@ -1339,7 +1443,7 @@
     for (var d = 1; d <= days; d++) {
       var ds = ym + "-" + String(d).padStart(2, "0"), dow = (first + d - 1) % 7, o = by[ds];
       var c = "cal-cell" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "") + (ds === D.today ? " today" : "") + (ds === selDay ? " sel" : "");
-      cells += '<button class="' + c + '" data-day="' + ds + '"><span class="d">' + d + "</span>" +
+      cells += '<button class="' + c + '" data-day="' + ds + '"><span class="d">' + d + "</span>" + (phReady() && photosOn(ds).length ? '<span class="phc">' + svgIcon("카메라", 11) + "</span>" : "") +
         (o && o.i ? '<span class="i num">+' + calAmt(o.i) + "</span>" : "") +
         (o && o.e ? '<span class="e num">−' + calAmt(o.e) + "</span>" : "") +
         (o && o.s ? '<span class="s num">' + calAmt(o.s) + "</span>" : "") + "</button>";
@@ -1353,8 +1457,9 @@
     var sd = new Date(selDay + "T00:00:00");
     var right = '<div class="card"><h2>' + (+selDay.slice(5, 7)) + "월 " + (+selDay.slice(8)) + "일 (" + "일월화수목금토"[sd.getDay()] + ')<span class="sub">' + rows.length + "건</span></h2>" +
       (rows.length ? rows.map(txLine).join("") : '<div class="empty">이 날은 내역이 없어요.</div>') +
-      '<button class="go-add" data-go-add="' + selDay + '">＋ 이 날짜로 입력하기</button></div>';
+      phDayHtml(selDay) + '<button class="go-add" data-go-add="' + selDay + '">＋ 이 날짜로 입력하기</button></div>';
     $("calWrap").innerHTML = left + right + trendCard();
+    phHydrate($("calWrap"));
     fitCalSum();
   }
   // 월별 추이: 고른 달까지 최근 12개월 수입·지출·저축 막대 + 지난달보다 많이 늘어난 지출 분류
@@ -1442,6 +1547,7 @@
     }
     renderListBody();
     renderReview();
+    renderAiCard();
   }
   function renderListBody() {
     var toks = listQ.trim().toLowerCase().split(/\s+/).filter(String), searching = toks.length > 0;
@@ -1528,6 +1634,7 @@
         often.map(function (k) { return '<span class="badge">' + esc(k) + " " + freq[k].n + "번 · " + man(freq[k].v) + "원</span>"; }).join("") +
         '<span class="badge" style="background:#E8F7F0;color:var(--green)">무지출 ' + noSpend + "일 / " + passed + "일</span></div></div>";
     }
+    if (mine.length && !future) h += '<div class="rv-sec"><b>AI 한마디</b><div id="aiRv">' + aiReviewHtml() + "</div></div>";
     // 한 줄 메모 (시트 '월간메모' 탭에 저장)
     var memos = (D.reviews || []).filter(function (r) { return r.month === ym; });
     h += '<div class="rv-sec"><b>' + m + "월 한 줄 메모</b>" + D.members.map(function (who, i) {
@@ -1570,12 +1677,13 @@
       (form.group === "이체" || form.group === "저축/투자" ? '<div class="field"><label>받는 통장 (선택)</label><select class="input" id="fRecv"><option value="">없음</option>' +
         (D.accounts || []).map(function (a) { return '<option' + (editing && editing.recv === a.name ? " selected" : "") + ">" + esc(a.name) + "</option>"; }).join("") +
         '</select><div class="hint">고르면 그 통장 잔액에 자동으로 더해져요.</div></div>' : "") +
-      '<div class="field"><label>메모 (선택)</label><input class="input" id="fMemo" autocomplete="off"></div>' +
+      '<div class="field"><label>메모 (선택)</label><input class="input" id="fMemo" autocomplete="off"></div>' + phFormHtml() +
       (editing ? '<div class="form-actions"><button class="cancel" id="fCancel">취소</button><button class="save" id="fSave">수정 저장</button></div>' : '<button class="save" id="fSave">저장하기</button>');
     var keep = { amt: $("fAmt") ? $("fAmt").value : "", desc: $("fDesc") ? $("fDesc").value : "", memo: $("fMemo") ? $("fMemo").value : "" };
     $("addForm").innerHTML = h;
     $("fAmt").value = keep.amt; $("fDesc").value = keep.desc; $("fMemo").value = keep.memo;
     amtHint();
+    phHydrate($("addForm"));
   }
 
   // ---------- 내용 → 대분류·항목 추천 ----------
@@ -1614,7 +1722,7 @@
 
   function clearForm() {
     ["fAmt", "fDesc", "fMemo"].forEach(function (id) { if ($(id)) $(id).value = ""; });
-    sug = null; form.manual = false;
+    sug = null; form.manual = false; form.photos = [];
     if ($("fDate")) $("fDate").value = D.today;
     form.item = "";
   }
@@ -1625,7 +1733,8 @@
     var grp = D.cats.filter(function (c) { return c.name === x.cat; })[0];
     form.group = grp ? grp.group : (x.type || "지출");
     form.cat = x.cat; form.item = x.item; form.currency = x.usd ? "USD" : "KRW"; form.manual = true; sug = null;
-    editing = { row: x.row, date: x.date, desc: x.desc, who: x.who, pay: x.pay, recv: x.recv, back: back };
+    editing = { row: x.row, date: x.date, desc: x.desc, who: x.who, pay: x.pay, recv: x.recv, back: back,
+      phRows: photosOf(x).map(function (q) { return q.row; }) };
     showView("add");
     renderForm();
     $("fDate").value = x.date;
@@ -1644,21 +1753,402 @@
     if (!form.cat) { toast("대분류를 골라 주세요."); return; }
     var t = { date: $("fDate").value, who: who ? who.v : "", cat: form.cat, item: form.item, desc: $("fDesc").value.trim(),
       amount: amt, currency: form.currency, pay: $("fPay").value, recv: $("fRecv") ? $("fRecv").value : "", memo: $("fMemo").value.trim() };
+    var pend = (form.photos || []).slice();
     if (editing) {
       var ed = editing;
       $("fSave").disabled = true; $("fSave").textContent = "고치는 중…";
       call("updateTransaction", [ed.row, ed.date, ed.desc, t], function (d) {
         D = d; editing = null; clearForm(); render(); showView(ed.back || "list"); toast("수정했어요 · " + t.cat + " " + (t.currency === "USD" ? "$" + amt : won(amt)));
+        phAfterSave(t, pend, ed.phRows);
       });
       return;
     }
     if (t.who) { store("who", t.who); store("pay_" + t.who, t.pay); }
     $("fSave").disabled = true; $("fSave").textContent = "저장 중…";
     call("addTransaction", [t], function (d) {
-      D = d; $("fAmt").value = ""; $("fDesc").value = ""; $("fMemo").value = ""; form.item = ""; sug = null; form.manual = false;
+      D = d; $("fAmt").value = ""; $("fDesc").value = ""; $("fMemo").value = ""; form.item = ""; sug = null; form.manual = false; form.photos = [];
       render(); toast("저장했어요 · " + t.cat + " " + (t.currency === "USD" ? "$" + amt : won(amt)));
+      phAfterSave(t, pend, []);
     });
   }
+
+  // AI-START ---------- AI (구글 Gemini 무료 등급) ----------
+  // 키는 시트 '설정' J10(이름표 W_AI_KEY)에 있고, 시트를 공유받은 계정으로 로그인해야만 읽혀요 (앱 주소에는 키가 없음).
+  // 보내는 것: 입력 문장/사진, 또는 가계부 요약(합계·분류·최근 내역). 계좌번호처럼 보이는 숫자는 빼고 보내요.
+  var AI_MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"];
+  var aiModelOk = store("ai_model") || "";
+  var aiAddS = { open: false, text: "", img: null, list: null, busy: false, msg: "" };   // AI로 입력 상태 (처음엔 한 줄로 접힘)
+  var aiChat = [], aiBusy = false;                                           // AI에게 묻기 대화
+  function aiReady() { return !!(D && D.aiKey); }
+  function aiCall(parts, opt) {
+    opt = opt || {};
+    var models = aiModelOk ? [aiModelOk].concat(AI_MODELS.filter(function (m) { return m !== aiModelOk; })) : AI_MODELS.slice();
+    var body = { contents: (opt.history || []).concat([{ role: "user", parts: parts }]),
+      generationConfig: { temperature: opt.temp == null ? 0.2 : opt.temp } };
+    if (opt.json) body.generationConfig.responseMimeType = "application/json";
+    if (opt.system) body.systemInstruction = { parts: [{ text: opt.system }] };
+    function tryModel(i) {
+      if (i >= models.length) return Promise.reject(new Error("쓸 수 있는 AI 모델을 찾지 못했어요."));
+      return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent", {
+        method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": D.aiKey }, body: JSON.stringify(body)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          var em = (j.error && j.error.message) || "";
+          if (r.status === 404 || (r.status === 400 && /not found|not supported|is not available/i.test(em))) return tryModel(i + 1);
+          if (r.status === 429) throw new Error("오늘 무료 사용량을 다 썼어요. 잠시 뒤나 내일 다시 해 주세요.");
+          if ((r.status === 400 || r.status === 403) && /api key|API_KEY|permission/i.test(em)) throw new Error("AI 키가 맞지 않아요. 설정 탭 J10 칸의 키를 확인해 주세요.");
+          if (!r.ok) throw new Error("AI 오류 (" + r.status + ") " + em.slice(0, 80));
+          aiModelOk = models[i]; store("ai_model", models[i]);
+          var c = j.candidates && j.candidates[0];
+          var t = c && c.content && c.content.parts ? c.content.parts.map(function (p) { return p.text || ""; }).join("") : "";
+          if (!t) throw new Error("AI가 답을 주지 않았어요. 다시 해 주세요.");
+          return t;
+        });
+      });
+    }
+    return tryModel(0);
+  }
+  function aiPay(p) { return String(p || "").replace(/\(\s*\d[\d\-\s]*\)/g, "").trim(); }   // 결제수단 이름의 계좌번호 뒷자리는 빼고 보냄
+  function aiFmt(t) {
+    return esc(String(t || "").trim()).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^\s*[-*]\s+/gm, "• ").replace(/\n/g, "<br>");
+  }
+  var AI_NOKEY = '<div class="ai-guide"><b>AI 키를 넣으면 쓸 수 있어요</b><br>구글 AI Studio(aistudio.google.com)에서 무료 API 키를 받아 시트 <b>설정 탭 J10</b> 칸에 붙여넣고, 앱 위 ↻ 버튼을 눌러 주세요. 자세한 순서는 사용법 탭에 있어요.</div>';
+
+  // ----- 1·3) 말로 입력 / 사진 읽기 -----
+  function aiEntrySystem() {
+    var d = new Date(D.today + "T00:00:00");
+    var cats = ["지출", "수입", "저축/투자", "이체"].map(function (g) {
+      return g + ": " + D.cats.filter(function (c) { return c.group === g; }).map(function (c) { return c.name; }).join(", ");
+    }).join("\n");
+    var items = D.cats.map(function (c) {
+      var it = D.items.filter(function (i) { return i.cat === c.name; }).map(function (i) { return i.name; });
+      return it.length ? c.name + " → " + it.join(", ") : "";
+    }).filter(String).join("\n");
+    return "너는 부부 가계부 앱 '불림'의 입력 도우미야. 사용자가 적은 문장이나 사진(영수증, 카드 결제 문자, 계좌 이체 내역 캡처)에서 가계부 내역을 뽑아 JSON 배열로만 답해.\n" +
+      "오늘은 " + D.today + " (" + "일월화수목금토"[d.getDay()] + "요일)이야. '어제', '지난 금요일' 같은 말은 실제 날짜로 바꾸고, 날짜가 없으면 오늘로 해.\n" +
+      "배열의 각 원소: {\"date\":\"YYYY-MM-DD\",\"who\":\"구성원 이름 또는 빈칸\",\"group\":\"지출|수입|저축/투자|이체\",\"cat\":\"대분류\",\"item\":\"세부 항목 또는 빈칸\",\"desc\":\"가게 이름이나 내용(짧게)\",\"amount\":숫자,\"currency\":\"KRW 또는 USD\",\"pay\":\"결제수단 또는 빈칸\",\"memo\":\"\"}\n" +
+      "규칙: cat은 아래 대분류 중 하나를 정확히 그대로 써. item은 그 대분류의 세부 항목 중에서만 고르고 없으면 빈칸. pay는 결제수단 목록에 있는 것만(카드사·카드 이름으로 추정), 모르면 빈칸. " +
+      "승인 취소·잔액 안내·광고 문자는 빼. 영수증이면 품목별이 아니라 결제 합계 한 건으로. 확실하지 않은 값은 빈칸.\n" +
+      "참고: 단기임대(삼삼엠투) 숙박 수입=임대수입, 그 집 관리비·가스·청소=임대운영비, ChatGPT·Claude 같은 AI 구독이나 서버·도메인=IT/구독, 넷플릭스 같은 OTT=문화/여가, 유튜브·블로그 수익=콘텐츠수익, 카드값 출금=카드대금(이체).\n" +
+      "구성원: " + D.members.join(", ") + "\n결제수단: " + D.pays.join(", ") + "\n대분류:\n" + cats + "\n세부 항목:\n" + items;
+  }
+  function aiNormEntry(e) {
+    e = e || {};
+    var desc = String(e.desc || "").trim().slice(0, 60);
+    var cat = D.cats.some(function (c) { return c.name === e.cat; }) ? e.cat : "";
+    var item = e.item || "", pay = e.pay || "";
+    var m = matchSuggest_(desc, D.ledger, D.cats, D.items);
+    if (m && m.how === "same") { cat = m.cat; item = m.item; if (!pay) pay = m.pay; }   // 예전에 똑같이 적은 게 있으면 우리집 습관대로
+    else if (!cat && m) { cat = m.cat; if (!item) item = m.item; }
+    if (!cat) { var g0 = D.cats.filter(function (c) { return c.group === (e.group || "지출"); })[0]; cat = g0 ? g0.name : ""; }
+    var grp = (D.cats.filter(function (c) { return c.name === cat; })[0] || {}).group || "지출";
+    if (!D.items.some(function (i) { return i.cat === cat && i.name === item; })) item = "";
+    if (D.pays.indexOf(pay) < 0) pay = "";
+    var who = D.members.indexOf(e.who) >= 0 ? e.who : (store("who") || D.members[0] || "");
+    var amt = Math.abs(parseFloat(String(e.amount == null ? "" : e.amount).replace(/[^0-9.\-]/g, ""))) || 0;
+    var date = /^\d{4}-\d{2}-\d{2}$/.test(String(e.date)) ? e.date : D.today;
+    return { date: date, who: who, group: grp, cat: cat, item: item, desc: desc, amount: amt, currency: e.currency === "USD" ? "USD" : "KRW",
+      pay: pay || store("pay_" + who) || "", memo: String(e.memo || "").slice(0, 80) };
+  }
+  function renderAiAdd() {
+    var box = $("aiAdd"); if (!box || !D) return;
+    var s = aiAddS, open = s.open || s.busy;
+    var h = '<button type="button" class="ai-head" id="aiToggle" aria-expanded="' + open + '"><span class="ai-mark">✦</span><b>AI로 입력</b>' +
+      '<span class="sub">말로 적거나 사진을 올리면 채워 줘요</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>';
+    box.classList.toggle("closed", !open);
+    if (!open) { box.innerHTML = h; return; }
+    if (!aiReady()) { box.innerHTML = h + AI_NOKEY; return; }
+    h += '<textarea class="input ai-text" id="aiText" rows="2" placeholder="예: 어제 스타벅스 5800원 슬기카드, 오늘 이마트 52000원">' + esc(s.text) + "</textarea>" +
+      (s.img ? '<div class="ai-thumb"><img src="' + s.img + '" alt=""><button type="button" id="aiPhotoX" aria-label="사진 빼기">×</button></div>' : "") +
+      '<div class="ai-row"><label class="ai-photo">' + svgIcon("카메라", 18) + "<span>사진</span>" +
+      '<input type="file" id="aiFile" accept="image/*" hidden></label>' +
+      '<button type="button" class="ai-go" id="aiGo"' + (s.busy ? " disabled" : "") + ">" + (s.busy ? "읽는 중…" : "AI로 채우기") + "</button></div>";
+    if (s.msg) h += '<div class="ai-msg">' + s.msg + "</div>";
+    if (s.list && s.list.length > 1) {
+      h += '<div class="ai-list">' + s.list.map(function (e, i) {
+        return '<label class="ai-item"><input type="checkbox" data-ai-chk="' + i + '"' + (e.off ? "" : " checked") + ">" + ci(e.cat, 18) +
+          '<span class="grow"><b>' + esc(e.desc || e.cat) + '</b><small>' + (+e.date.slice(5, 7)) + "/" + (+e.date.slice(8)) + " · " + esc(e.cat) + (e.item ? " · " + esc(e.item) : "") + " · " + esc(e.who) + (e.pay ? " · " + esc(e.pay) : "") + "</small></span>" +
+          '<span class="amt num t-' + esc(e.group) + '">' + (e.currency === "USD" ? "$" + e.amount : num(e.amount)) + "</span>" +
+          '<button type="button" class="ai-one" data-ai-one="' + i + '">고치기</button></label>';
+      }).join("") + "</div>" +
+        '<button type="button" class="save" id="aiSaveAll">선택한 ' + s.list.filter(function (e) { return !e.off; }).length + "건 한 번에 저장</button>";
+    }
+    box.innerHTML = h;
+  }
+  function aiFillForm(e) {
+    form.group = e.group; form.cat = e.cat; form.item = e.item; form.currency = e.currency; form.manual = true; sug = null;
+    if (e.who) store("who", e.who);
+    renderForm();
+    $("fDate").value = e.date; $("fAmt").value = e.amount || ""; $("fDesc").value = e.desc; $("fMemo").value = e.memo || "";
+    if (e.pay && [].some.call($("fPay").options, function (o) { return o.value === e.pay; })) $("fPay").value = e.pay;
+    amtHint();
+  }
+  function aiFill() {
+    var s = aiAddS;
+    s.text = ($("aiText") ? $("aiText").value : s.text).trim();
+    if (!s.text && !s.img) { toast("적을 내용을 쓰거나 사진을 올려 주세요."); return; }
+    s.busy = true; s.msg = ""; s.list = null; renderAiAdd();
+    var parts = [{ text: (s.img ? "이 사진에서 가계부 내역을 뽑아 줘." + (s.text ? " 덧붙인 말: " + s.text : "") : s.text) }];
+    if (s.img) parts.push({ inline_data: { mime_type: "image/jpeg", data: s.img.split(",")[1] } });
+    aiCall(parts, { system: aiEntrySystem(), json: true }).then(function (t) {
+      var arr; try { arr = JSON.parse(t); } catch (x) { var m = t.match(/\[[\s\S]*\]/); arr = m ? JSON.parse(m[0]) : []; }
+      if (!Array.isArray(arr)) arr = arr && Array.isArray(arr.entries) ? arr.entries : [arr];
+      var list = arr.map(aiNormEntry).filter(function (e) { return e.amount > 0 && e.cat; });
+      s.busy = false;
+      if (!list.length) { s.msg = "내역을 찾지 못했어요. 가게 이름과 금액을 같이 적어 주세요."; renderAiAdd(); return; }
+      if (list.length === 1) {
+        s.list = null; s.msg = "✓ 아래 입력칸을 채웠어요. 확인하고 <b>저장하기</b>를 눌러 주세요.";
+        renderAiAdd(); aiFillForm(list[0]);
+        setTimeout(function () { var f = $("addForm"); if (f) f.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
+      } else {
+        s.list = list; s.msg = list.length + "건을 찾았어요. 맞는지 보고 한 번에 저장하거나, '고치기'로 하나씩 고쳐 저장하세요.";
+        renderAiAdd();
+      }
+    }).catch(function (err) { s.busy = false; s.msg = esc(err.message || String(err)); renderAiAdd(); });
+  }
+  function aiSaveAll() {
+    var s = aiAddS, list = (s.list || []).filter(function (e) { return !e.off; });
+    if (!list.length) { toast("저장할 내역을 골라 주세요."); return; }
+    var ts = list.map(function (e) { return { date: e.date, who: e.who, cat: e.cat, item: e.item, desc: e.desc, amount: e.amount, currency: e.currency, pay: e.pay, recv: "", memo: e.memo }; });
+    $("aiSaveAll").disabled = true; $("aiSaveAll").textContent = "저장 중…";
+    call("addTransactions", [ts], function (d) {
+      D = d; aiAddS = { open: false, text: "", img: null, list: null, busy: false, msg: "" };
+      render(); toast(ts.length + "건 저장했어요");
+    });
+  }
+  function aiLoadImage(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL("image/jpeg", 0.85));
+        };
+        img.onerror = function () { rej(new Error("이 사진은 열 수 없어요. JPG나 PNG로 올려 주세요.")); };
+        img.src = fr.result;
+      };
+      fr.onerror = rej; fr.readAsDataURL(file);
+    });
+  }
+
+  // ----- 2) 가계부에 질문하기 -----
+  function aiFinanceText() {
+    var L = [], a = D.asset;
+    L.push("오늘: " + D.today + " / 앱에서 보고 있는 달: " + ymLabel(ym) + " / 구성원: " + D.members.join(", "));
+    L.push("자산 요약: 순자산 " + num(a.netWorth) + "원, 현금 " + num(a.cash) + "원, 부채 " + num(a.debt) + "원, 투자 평가 " + num(D.invest.value) + "원 (원금 " + num(D.invest.cost) + "원, 수익률 " + pct(D.invest.ret) + ")");
+    L.push("[월별 합계, 최근 12개월] 월 | 수입 | 지출 | 저축·투자");
+    for (var k = 11; k >= 0; k--) { var m = shiftYm(ym, -k); L.push(m + " | " + num(monthSum("수입", m)) + " | " + num(monthSum("지출", m)) + " | " + num(monthSum("저축/투자", m))); }
+    var ms = [5, 4, 3, 2, 1, 0].map(function (k2) { return shiftYm(ym, -k2); });
+    ["지출", "수입", "저축/투자"].forEach(function (g) {
+      L.push("[" + g + " 분류별, 최근 6개월] 분류 | " + ms.join(" | ") + (g === "지출" ? " | 월 예산" : ""));
+      D.cats.filter(function (c) { return c.group === g; }).forEach(function (c) {
+        var v = ms.map(function (m2) { return sumBy(function (x) { return x.cat === c.name && x.date.slice(0, 7) === m2; }); });
+        if (v.some(Boolean) || c.budget) L.push(c.name + " | " + v.map(num).join(" | ") + (g === "지출" ? " | " + (c.budget ? num(c.budget) : "-") : ""));
+      });
+    });
+    if ((D.fixed || []).length) L.push("[고정 수입·지출] " + D.fixed.map(function (f) { return (f.kind === "in" ? "수입 " : "지출 ") + f.name + " " + num(f.amount) + "원 매달 " + f.day + "일"; }).join(" / "));
+    var from = shiftYm(ym, -1);
+    var rows = D.ledger.filter(function (x) { return x.date.slice(0, 7) >= from && x.date.slice(0, 7) <= ym; })
+      .sort(function (p, q) { return p.date < q.date ? -1 : p.date > q.date ? 1 : 0; }).slice(-250);
+    L.push("[최근 내역: " + from + " ~ " + ym + "] 날짜 | 누가 | 구분 | 대분류/항목 | 내용 | 금액 | 결제수단");
+    rows.forEach(function (x) { L.push(x.date + " | " + x.who + " | " + x.type + " | " + x.cat + (x.item ? "/" + x.item : "") + " | " + (x.desc || "") + " | " + num(x.amt) + " | " + aiPay(x.pay)); });
+    return L.join("\n");
+  }
+  function aiAskSystem() {
+    return "너는 부부 가계부 앱 '불림'의 상담 도우미야. 아래 가계부 데이터만 근거로 한국어로 짧고 정확하게 답해. " +
+      "금액은 원 단위에 쉼표를 붙여. 계산이 필요하면 데이터로 직접 계산하고, 데이터에 없는 기간이나 내용이면 없다고 솔직히 말해. " +
+      "3~6문장, 필요하면 짧은 목록. 특정 종목 매수·매도 추천 같은 투자 조언은 하지 말고 일반적인 정보만.\n\n" + aiFinanceText();
+  }
+  var AI_QUICK = ["이번 달 어디에 많이 썼어?", "지난달이랑 비교해 줘", "예산 넘은 거 있어?", "삼삼엠투 이번 달 남은 돈은?", "아낄 수 있는 지출 알려 줘"];
+  function renderAiCard() {
+    var box = $("aiCard"); if (!box || !D) return;
+    var h = '<h2><span class="ai-mark">✦</span>AI에게 묻기<span class="sub">우리 가계부 숫자로 답해요</span></h2>';
+    if (!aiReady()) { box.innerHTML = h + AI_NOKEY; return; }
+    if (!$("aiChat")) {
+      box.innerHTML = h + '<div class="chat" id="aiChat"></div>' +
+        '<div class="chips ai-q">' + AI_QUICK.map(function (q) { return '<button type="button" class="chip" data-aiq="' + esc(q) + '">' + esc(q) + "</button>"; }).join("") + "</div>" +
+        '<div class="chat-in"><textarea class="input" id="aiQ" rows="1" placeholder="무엇이든 물어보세요"></textarea><button type="button" id="aiSend" class="ai-go">보내기</button></div>';
+    }
+    renderChat();
+  }
+  function renderChat() {
+    var c = $("aiChat"); if (!c) return;
+    c.innerHTML = (aiChat.length ? "" : '<div class="bub ai">안녕하세요! 이번 달 지출, 예산, 삼삼엠투 수익처럼 우리 가계부에 대해 물어보세요. 아래 예시를 눌러도 돼요.</div>') +
+      aiChat.map(function (m) { return '<div class="bub ' + (m.role === "user" ? "me" : "ai") + '">' + (m.role === "user" ? esc(m.text) : aiFmt(m.text)) + "</div>"; }).join("") +
+      (aiBusy ? '<div class="bub ai typing">생각하는 중…</div>' : "");
+    c.scrollTop = c.scrollHeight;
+  }
+  function aiAsk(q) {
+    q = String(q || "").trim(); if (!q || aiBusy) return;
+    var hist = aiChat.slice(-8).map(function (m) { return { role: m.role, parts: [{ text: m.text }] }; });
+    aiChat.push({ role: "user", text: q }); aiBusy = true; renderChat();
+    if ($("aiQ")) $("aiQ").value = "";
+    aiCall([{ text: q }], { system: aiAskSystem(), history: hist, temp: 0.3 }).then(function (t) {
+      aiChat.push({ role: "model", text: t });
+    }).catch(function (err) { aiChat.push({ role: "model", text: "⚠ " + (err.message || err) }); })
+      .then(function () { aiBusy = false; renderChat(); });
+  }
+
+  // ----- 4) 이번 달 돌아보기 AI 한마디 -----
+  function aiReviewHtml() {
+    if (!aiReady()) return '<div class="muted" style="font-size:13px">설정 탭 J10에 AI 키를 넣으면 이번 달 한마디를 받을 수 있어요.</div>';
+    var c = store("ai_rv_" + ym);
+    if (c) { try { c = JSON.parse(c); } catch (x) { c = null; } }
+    return (c ? '<div class="ai-say">' + aiFmt(c.t) + '<small>' + esc(c.at) + " · AI가 쓴 글이라 틀릴 수 있어요</small></div>" : "") +
+      '<button type="button" class="ai-go ai-rv" id="aiRvBtn">' + (c ? "다시 받기" : "✦ AI 한마디 받기") + "</button>";
+  }
+  function aiReview() {
+    var b = $("aiRvBtn"); if (b) { b.disabled = true; b.textContent = "쓰는 중…"; }
+    var memos = (D.reviews || []).filter(function (r) { return r.month === ym && r.memo; }).map(function (r) { return r.who + ": " + r.memo; }).join(" / ");
+    var q = ymLabel(ym) + " 가계를 돌아보는 한마디를 써 줘. 3~4문장으로: 잘한 점 1가지, 아쉬운 점 1가지(숫자로), 다음 달에 해 볼 만한 구체적인 실천 1~2가지. 부부에게 말하듯 따뜻하지만 솔직하게." +
+      (memos ? " 부부가 남긴 이번 달 메모: " + memos : "");
+    aiCall([{ text: q }], { system: aiAskSystem(), temp: 0.5 }).then(function (t) {
+      store("ai_rv_" + ym, JSON.stringify({ t: t, at: D.today }));
+    }).catch(function (err) { toast(err.message || String(err)); })
+      .then(function () { if ($("aiRv")) $("aiRv").innerHTML = aiReviewHtml(); });
+  }
+  // AI-END
+
+  // PHOTO-START ---------- 사진 보관 (영수증 증빙 · 추억) ----------
+  // 사진 파일은 '불림 사진' Apps Script(설정 J14 주소)가 구글 드라이브에 저장하고, 목록은 시트 '사진' 탭에 있어요.
+  // 내역과는 날짜 + 내용 + 금액이 같으면 연결돼요. 내용 없이 날짜만 있는 사진은 그날의 추억 사진.
+  var phCache = {}, phWait = {}, phState = { list: [], i: 0 };
+  function phReady() { return !!(D && D.photoUrl && typeof token === "function"); }
+  function phCall(action, data) {
+    var body = { action: action, token: token() };
+    for (var k in data) body[k] = data[k];
+    return fetch(D.photoUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.error === "NO_ACCESS") throw new Error("사진 보관에 들어갈 수 없어요. 다시 로그인해 주세요.");
+        if (j.error) throw new Error(j.error);
+        return j;
+      });
+  }
+  function phLoad(id) {
+    if (phCache[id]) return Promise.resolve(phCache[id]);
+    if (!phWait[id]) phWait[id] = phCall("get", { id: id }).then(function (j) { phCache[id] = "data:" + j.mime + ";base64," + j.data; delete phWait[id]; return phCache[id]; })
+      .catch(function (e) { delete phWait[id]; throw e; });
+    return phWait[id];
+  }
+  function phResize(img, max, q) {
+    var k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", q);
+  }
+  function phPrep(file) {   // 큰 사진(1600px)과 작은 사진(360px)을 폰에서 미리 줄여서 올려요
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var img = new Image();
+        img.onload = function () { res({ full: phResize(img, 1600, 0.82), thumb: phResize(img, 360, 0.75) }); };
+        img.onerror = function () { rej(new Error("이 사진은 열 수 없어요. JPG나 PNG로 올려 주세요.")); };
+        img.src = fr.result;
+      };
+      fr.onerror = rej; fr.readAsDataURL(file);
+    });
+  }
+  function phTxAmt(x) { return x.usd !== "" && x.usd ? x.usd : (x.krw !== "" ? x.krw : x.amt); }
+  function photosOf(x) {
+    if (!D.photos || !x) return [];
+    return D.photos.filter(function (p) {
+      if (p.desc === "" && p.amount === "") return false;   // 날짜만 있는 추억 사진은 내역에 붙지 않음
+      return p.date === x.date && p.desc === (x.desc || "") && (p.amount === "" || Number(p.amount) === Number(phTxAmt(x)));
+    });
+  }
+  function photosOn(date) { return (D.photos || []).filter(function (p) { return p.date === date; }); }
+  function phThumbs(list) {
+    return list.map(function (p) { return '<button type="button" class="ph-th" data-ph="' + esc(p.id) + '"><img data-ph-src="' + esc(p.thumb || p.id) + '" alt=""></button>'; }).join("");
+  }
+  function phHydrate(root) {   // 화면에 나온 작은 사진만 그때그때 불러오기
+    if (!root) return;
+    [].forEach.call(root.querySelectorAll("img[data-ph-src]"), function (img) {
+      var id = img.getAttribute("data-ph-src"); img.removeAttribute("data-ph-src");
+      phLoad(id).then(function (u) { img.src = u; }).catch(function () { img.alt = "!"; });
+    });
+  }
+  function phUploadAll(meta, list) {
+    var n = list.length, i = 0;
+    function next() {
+      if (i >= n) return Promise.resolve();
+      toast("사진 올리는 중 " + (i + 1) + "/" + n + "…");
+      var p = list[i++];
+      return phCall("upload", { date: meta.date, who: meta.who || "", desc: meta.desc || "", amount: meta.amount === "" ? "" : meta.amount,
+        caption: meta.caption || "", full: p.full.split(",")[1], thumb: p.thumb.split(",")[1] }).then(next);
+    }
+    return next();
+  }
+  function phRefresh(msg) { call("getData", [], function (d) { D = d; render(); if (msg) toast(msg); }); }
+  function phFormHtml() {
+    if (!phReady()) return "";
+    var ex = editing && editing.row ? photosOf(D.ledger.filter(function (r) { return r.row === editing.row; })[0]) : [];
+    return '<div class="field"><label>사진 (선택)</label><div class="ph-row">' + phThumbs(ex) +
+      (form.photos || []).map(function (p, i) { return '<span class="ph-th new"><img src="' + p.thumb + '" alt=""><button type="button" class="x" data-ph-rm="' + i + '" aria-label="빼기">×</button></span>'; }).join("") +
+      '<label class="ph-add" title="사진 붙이기">' + svgIcon("카메라", 22) + '<input type="file" id="phFile" accept="image/*" multiple hidden></label></div>' +
+      '<div class="hint">영수증 증빙이나 그날의 사진을 붙여 둘 수 있어요. 저장할 때 같이 올라가요.</div></div>';
+  }
+  function phDayHtml(date) {
+    if (!phReady()) return "";
+    var list = photosOn(date);
+    return '<div class="ph-day"><b>이날의 사진' + (list.length ? " " + list.length + "장" : "") + '</b><div class="ph-row">' + phThumbs(list) +
+      '<label class="ph-add" title="사진 추가">' + svgIcon("카메라", 22) + '<input type="file" id="phDayFile" accept="image/*" multiple hidden></label></div></div>';
+  }
+  function phView() {
+    var v = $("phView");
+    if (!v) {
+      v = document.createElement("div"); v.id = "phView"; v.className = "ph-view";
+      v.innerHTML = '<div class="ph-top"><span id="phInfo"></span><button type="button" id="phClose" aria-label="닫기">×</button></div>' +
+        '<div class="ph-img"><img id="phImg" alt=""><div id="phLoading">불러오는 중…</div></div>' +
+        '<div class="ph-bot"><button type="button" id="phPrev" aria-label="이전">‹</button><span id="phCount"></span><button type="button" id="phNext" aria-label="다음">›</button>' +
+        '<button type="button" id="phDel">삭제</button></div>';
+      document.body.appendChild(v);
+    }
+    return v;
+  }
+  function phOpen(list, i) {
+    if (!list.length) return;
+    phState = { list: list, i: Math.max(0, Math.min(i || 0, list.length - 1)) };
+    phView().classList.add("on"); phShow();
+  }
+  function phShow() {
+    var p = phState.list[phState.i], img = $("phImg");
+    $("phInfo").textContent = [p.date, p.desc || p.caption, p.who].filter(Boolean).join(" · ");
+    $("phCount").textContent = phState.list.length > 1 ? (phState.i + 1) + " / " + phState.list.length : "";
+    $("phPrev").style.visibility = $("phNext").style.visibility = phState.list.length > 1 ? "visible" : "hidden";
+    $("phDel").classList.remove("arm"); $("phDel").textContent = "삭제";
+    img.removeAttribute("src"); $("phLoading").style.display = "";
+    if (p.thumb && phCache[p.thumb]) img.src = phCache[p.thumb];   // 작은 사진 먼저 보여 주고 큰 사진으로 바꿈
+    phLoad(p.id).then(function (u) { if (phState.list[phState.i] === p) { img.src = u; $("phLoading").style.display = "none"; } })
+      .catch(function (e) { $("phLoading").textContent = e.message || "사진을 불러오지 못했어요"; });
+  }
+  function phClose() { var v = $("phView"); if (v) v.classList.remove("on"); }
+  function phDelete(b) {
+    if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent = "정말 삭제"; return; }
+    var p = phState.list[phState.i];
+    b.textContent = "지우는 중…";
+    phCall("delete", { id: p.id }).then(function () { phClose(); phRefresh("사진을 지웠어요 (드라이브 휴지통)"); })
+      .catch(function (e) { toast(e.message || String(e)); b.classList.remove("arm"); b.textContent = "삭제"; });
+  }
+  function phMark(x) { return phReady() && photosOf(x).length ? '<span class="ph-mark" title="사진 있음">' + svgIcon("카메라", 13) + "</span>" : ""; }
+  function phTxBtn(x) { var n = phReady() ? photosOf(x).length : 0; return n ? '<button class="edit" data-ph-tx="' + x.row + '">사진' + (n > 1 ? " " + n : "") + "</button>" : ""; }
+  // 내역 저장(추가·수정) 뒤: 수정이면 붙어 있던 사진의 날짜·내용·금액도 같이 바꾸고, 새로 붙인 사진은 올림
+  function phAfterSave(t, pend, rows) {
+    if (!phReady() || (!pend.length && !(rows && rows.length))) return;
+    var meta = { date: t.date, who: t.who, desc: t.desc, amount: t.amount };
+    var relink = rows && rows.length ? new Promise(function (res) { call("relinkPhotos", [rows, meta], function (d) { D = d; res(); }); }) : Promise.resolve();
+    relink.then(function () { return phUploadAll(meta, pend); })
+      .then(function () { if (pend.length) phRefresh("사진 " + pend.length + "장도 올렸어요"); else render(); })
+      .catch(function (e) { toast("사진 올리기 실패: " + (e.message || e)); });
+  }
+  function phAddFiles(files, cb) {
+    var arr = [].slice.call(files || []).slice(0, 10);
+    Promise.all(arr.map(phPrep)).then(cb).catch(function (e) { toast(e.message || "사진을 열지 못했어요"); });
+  }
+  // PHOTO-END
 
   // ---------- events ----------
   document.addEventListener("click", function (e) {
@@ -1670,6 +2160,24 @@
     }
     if (b.dataset.view) { if (editing) { editing = null; clearForm(); renderForm(); } showView(b.dataset.view); return; }
     if (b.dataset.day) { selDay = b.dataset.day; renderCal(); return; }
+    if (b.dataset.ph) {
+      var ids = [].map.call((b.closest(".ph-row") || b.parentNode).querySelectorAll("[data-ph]"), function (y) { return y.dataset.ph; });
+      var lst = ids.map(function (id) { return (D.photos || []).filter(function (q) { return q.id === id; })[0]; }).filter(Boolean);
+      phOpen(lst, ids.indexOf(b.dataset.ph)); return;
+    }
+    if (b.dataset.phRm) { form.photos.splice(+b.dataset.phRm, 1); renderForm(); return; }
+    if (b.dataset.phTx) { phOpen(photosOf(D.ledger.filter(function (r) { return r.row === +b.dataset.phTx; })[0]), 0); return; }
+    if (b.id === "phClose") { phClose(); return; }
+    if (b.id === "phPrev" || b.id === "phNext") { var L2 = phState.list.length; phState.i = (phState.i + (b.id === "phNext" ? 1 : -1) + L2) % L2; phShow(); return; }
+    if (b.id === "phDel") { phDelete(b); return; }
+    if (b.id === "aiToggle") { aiAddS.open = !aiAddS.open; renderAiAdd(); if (aiAddS.open && $("aiText")) $("aiText").focus(); return; }
+    if (b.id === "aiGo") { aiFill(); return; }
+    if (b.id === "aiPhotoX") { aiAddS.img = null; renderAiAdd(); return; }
+    if (b.id === "aiSaveAll") { aiSaveAll(); return; }
+    if (b.dataset.aiOne) { var e1 = aiAddS.list[+b.dataset.aiOne]; e1.off = true; aiAddS.msg = "아래 입력칸에서 '" + esc(e1.desc || e1.cat) + "'을(를) 고쳐 저장하세요. 나머지는 위에서 한 번에 저장할 수 있어요."; renderAiAdd(); aiFillForm(e1); return; }
+    if (b.id === "aiSend") { aiAsk($("aiQ").value); return; }
+    if (b.dataset.aiq) { aiAsk(b.dataset.aiq); return; }
+    if (b.id === "aiRvBtn") { aiReview(); return; }
     if (b.dataset.cmp) {   // 수익률 비교: 기본/환율, 기간, 범례 켜고 끄기
       var cs = cmpState[b.dataset.cmp];
       if (b.dataset.cmpMode) cs.mode = b.dataset.cmpMode;
@@ -1707,11 +2215,35 @@
   var qT, sugT;
   document.addEventListener("input", function (e) {
     if (e.target.id === "fAmt") amtHint();
+    if (e.target.id === "aiText") aiAddS.text = e.target.value;
     if (e.target.id === "fDesc") { clearTimeout(sugT); sugT = setTimeout(sugCompute, 220); }
     if (e.target.closest && e.target.closest(".rv-memo")) growArea(e.target);
     if (e.target.id === "listQ") { clearTimeout(qT); qT = setTimeout(function () { listQ = e.target.value; renderListBody(); }, 150); }
   });
-  document.addEventListener("keydown", function (e) { if (e.target.id === "listQ" && e.key === "Enter") e.target.blur(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.target.id === "listQ" && e.key === "Enter") e.target.blur();
+    if ($("phView") && $("phView").classList.contains("on")) {
+      if (e.key === "Escape") phClose();
+      if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && phState.list.length > 1) { phState.i = (phState.i + (e.key === "ArrowRight" ? 1 : -1) + phState.list.length) % phState.list.length; phShow(); }
+    }
+    if (e.target.id === "aiQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); aiAsk(e.target.value); }
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id === "aiFile" && e.target.files && e.target.files[0]) {
+      aiLoadImage(e.target.files[0]).then(function (u) { aiAddS.img = u; aiAddS.msg = "사진을 올렸어요. 'AI로 채우기'를 눌러 주세요."; renderAiAdd(); })
+        .catch(function (err) { toast(err.message || "사진을 열지 못했어요"); });
+    }
+    if (e.target.id === "phFile") { phAddFiles(e.target.files, function (arr) { form.photos = (form.photos || []).concat(arr); renderForm(); }); e.target.value = ""; }
+    if (e.target.id === "phDayFile") {
+      var day = selDay;
+      phAddFiles(e.target.files, function (arr) {
+        phUploadAll({ date: day, who: store("who") || D.members[0] || "", desc: "", amount: "" }, arr)
+          .then(function () { phRefresh("사진 " + arr.length + "장 올렸어요"); }).catch(function (err) { toast("사진 올리기 실패: " + (err.message || err)); });
+      });
+      e.target.value = "";
+    }
+    if (e.target.dataset && e.target.dataset.aiChk != null) { aiAddS.list[+e.target.dataset.aiChk].off = !e.target.checked; renderAiAdd(); }
+  });
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(function () { fitZoom(); if (D) { renderHome(); renderInvest(); renderCal(); } }, 200); });
 
   fitZoom();
