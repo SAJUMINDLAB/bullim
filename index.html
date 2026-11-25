@@ -285,10 +285,10 @@
     .grid { gap: 20px; }
     /* 홈 = 한 화면 대시보드 (3칸) */
     #homeGrid { display: grid; column-count: auto; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-template-areas: "hero hero hero" "month month card" "budget budget div" "trend goal goal"; }
+      grid-template-areas: "hero hero hero" "month month card" "budget budget flow" "trend goal div"; }
     #homeGrid > .card { margin: 0; }
     #homeGrid > .hero { grid-area: hero; } .c-month { grid-area: month; } .c-budget { grid-area: budget; }
-    .c-card { grid-area: card; } .c-div { grid-area: div; } .c-trend { grid-area: trend; } .c-goal { grid-area: goal; }
+    .c-card { grid-area: card; } .c-div { grid-area: div; } .c-flow { grid-area: flow; } .c-trend { grid-area: trend; } .c-goal { grid-area: goal; }
     .c-month .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     /* PC: 일정 목록이 길어도 카드가 세로로 늘어나지 않게 안에서 스크롤 */
     .c-card .sched { max-height: 140px; overflow-y: auto; padding-right: 4px; }
@@ -460,6 +460,52 @@
   .ev-connect { display: grid; gap: 6px; background: #f4f8ff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; color: var(--icon); line-height: 1.5; }
   .ev-connect b { color: var(--ink); font-size: 14px; }
   .ev-connect button { justify-self: start; border: 0; background: #1f2b4d; color: #fff; border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 13px; }
+  /* 통장 준비 */
+  .flow-alert { background: #fff1f2; color: var(--red); font-weight: 700; font-size: 13px; border-radius: 10px; padding: 8px 12px; margin-bottom: 4px; }
+  .flow-ok { background: #effaf4; color: #12a05c; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 8px 12px; margin-bottom: 4px; }
+  .c-flow .badge { text-align: right; line-height: 1.35; }
+  .c-flow .badge.ok { background: #effaf4; color: #12a05c; }
+  .c-flow .list-line .amt { text-align: right; display: grid; }
+  .c-flow .list-line .amt small { font-size: 11px; color: var(--muted); }
+  .c-flow .list-line .amt small.up { color: var(--red); font-weight: 700; }
+  .c-flow .d { flex: 0 0 38px; color: var(--muted); font-size: 12px; }
+  .flow-plan summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--icon); padding: 10px 0 4px; }
+  .c-flow .hint { margin-top: 8px; }
+  /* 부부 대화 */
+  .chat-btn { position: relative; }
+  .chat-btn #chatDot { position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #f04452; color: #fff;
+    font-size: 10px; font-style: normal; font-weight: 800; line-height: 16px; text-align: center; box-shadow: 0 0 0 2px #fff; }
+  body.chat-lock { overflow: hidden; }
+  .chat-view { position: fixed; inset: 0; z-index: 80; background: #b2c7da; display: none; flex-direction: column; height: 100vh; height: 100dvh; }
+  .chat-view.on { display: flex; }
+  .chat-top { display: flex; align-items: center; gap: 6px; padding: 10px 10px; padding-top: max(10px, env(safe-area-inset-top)); background: #b2c7da; }
+  .chat-top #chatClose { border: 0; background: none; font-size: 30px; line-height: 1; width: 38px; height: 38px; color: #191f28; }
+  .chat-top b { flex: 1; font-size: 16px; color: #191f28; }
+  .chat-top #chatWho { border: 0; background: rgba(255,255,255,.55); border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #333d4b; }
+  .chat-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 6px 12px 14px; }
+  .chat-day { text-align: center; margin: 14px 0 8px; }
+  .chat-day span { display: inline-block; background: rgba(0,0,0,.14); color: #fff; font-size: 11.5px; border-radius: 999px; padding: 4px 12px; }
+  .chat-msg { margin-top: 3px; }
+  .chat-msg.first { margin-top: 10px; }
+  .chat-name { font-size: 12px; color: #4e5968; margin: 0 0 4px 2px; display: flex; align-items: center; gap: 5px; }
+  .chat-name i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .chat-line { display: flex; align-items: flex-end; gap: 5px; }
+  .chat-msg.me .chat-line { flex-direction: row-reverse; }
+  .chat-line .bub { max-width: 72%; background: #fff; color: #191f28; border-radius: 4px 16px 16px 16px; padding: 8px 11px; font-size: 15px; line-height: 1.45; word-break: break-word; white-space: normal; }
+  .chat-msg:not(.first) .bub { border-radius: 16px; }
+  .chat-msg.me .bub { background: #fee500; border-radius: 16px 4px 16px 16px; }
+  .chat-msg.me:not(.first) .bub { border-radius: 16px; }
+  .chat-line .bub a { color: #1b64da; }
+  .chat-line .tm { font-size: 10.5px; color: #556677; white-space: nowrap; flex: 0 0 auto; }
+  .chat-empty { text-align: center; color: #4e5968; font-size: 13.5px; line-height: 1.6; margin-top: 30vh; }
+  .chat-pick { background: #fff; border-radius: 18px; padding: 22px 18px; margin: 18vh auto 0; max-width: 320px; text-align: center; }
+  .chat-pick b { font-size: 17px; }
+  .chat-pick p { color: var(--muted); font-size: 13px; margin: 6px 0 16px; line-height: 1.5; }
+  .chat-pick button { display: block; width: 100%; border: 0; border-radius: 12px; background: #fee500; font-size: 16px; font-weight: 700; padding: 13px; margin-top: 8px; color: #191f28; }
+  .chat-bar { display: flex; align-items: flex-end; gap: 8px; background: #fff; padding: 8px 10px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .chat-bar textarea { flex: 1; resize: none; border: 0; background: #f2f4f6; border-radius: 18px; padding: 9px 14px; font: inherit; font-size: 16px; line-height: 1.35; max-height: 120px; outline: none; }
+  .chat-bar button { flex: 0 0 38px; width: 38px; height: 38px; border: 0; border-radius: 50%; background: #fee500; color: #191f28; display: grid; place-items: center; }
+  @media (min-width: 1000px) { .chat-view { left: auto; width: 420px; box-shadow: -10px 0 40px rgba(0,0,0,.18); } }
   /* 사진 보관 */
   .ph-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .ph-th { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: var(--soft); position: relative; display: block; }
@@ -587,6 +633,10 @@
     <span id="monthLabel" class="num"></span>
     <button id="nextM" aria-label="다음 달">›</button>
   </div>
+  <button class="icon-btn chat-btn" id="chatBtn" aria-label="부부 대화" title="부부 대화" style="display:none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"><path d="M12 4c4.97 0 9 3.13 9 7s-4.03 7-9 7c-.8 0-1.57-.08-2.3-.23L5 20l.9-3.6C4.1 15.1 3 13.17 3 11c0-3.87 4.03-7 9-7z"/></svg>
+    <i id="chatDot" style="display:none"></i>
+  </button>
   <button class="icon-btn" id="refresh" aria-label="새로고침" title="새로고침">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
   </button>
@@ -905,7 +955,7 @@
   var NAMES = ["W_LEDGER", "W_CATS", "W_ITEMS", "W_MEMBERS", "W_PAYS", "W_OTHER", "W_HOLDINGS", "W_CARDS",
     "W_DIV_KPI", "W_DIV_MONTH", "W_DIV_BY", "W_NW_HIST", "W_GOALS", "W_PENSION", "NET_WORTH", "W_TOTAL_ASSET",
     "W_DEBT", "W_FX", "W_CASH", "W_US_VALUE", "W_KR_VALUE", "W_US_USD_RET", "INVEST_COST", "INVEST_VALUE",
-    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS", "W_MEMBER_MAIL"];
+    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS", "W_MEMBER_MAIL", "W_FLOW", "W_OUTPLAN", "W_CHAT"];
   function apiGetData() {
     var q = NAMES.map(function (x) { return "ranges=" + enc(x); }).join("&");
     return gapi("GET", "/values:batchGet?" + q + "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER")
@@ -915,13 +965,14 @@
         return shape_(V);
       });
   }
-  // 고정항목: 수입 B항목명 C주체 D금액 E입금일 F입금통장 / 지출 J항목명 K주체 L대분류 M항목 N금액 O납부일 P결제수단 Q받는통장
+  // 고정항목: 수입 B항목명 C주체 D금액 E입금일 F입금통장 G이번달 / 지출 J항목명 K주체 L대분류 M항목 N금액 O납부일 P결제수단 Q받는통장 R이번달 S넣기 T메모 U빠져나갈통장 V다음날짜
   function fixed_(V) {
     var day = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ""), 10); return isFinite(n) ? n : 0; };
     var a = (V.W_FIXED_IN || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 5); return { kind: "in", name: s_(r[0]), who: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]) }; });
+      .map(function (r) { r = pad_(r, 6); return { kind: "in", name: s_(r[0]), who: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]), status: s_(r[5]) }; });
     var b = (V.W_FIXED_OUT || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 8); return { kind: "out", name: s_(r[0]), who: s_(r[1]), cat: s_(r[2]), item: s_(r[3]), amount: n_(r[4]), day: day(r[5]), pay: s_(r[6]), recv: s_(r[7]) }; });
+      .map(function (r) { r = pad_(r, 13); return { kind: "out", name: s_(r[0]), who: s_(r[1]), cat: s_(r[2]), item: s_(r[3]), amount: n_(r[4]), day: day(r[5]), pay: s_(r[6]), recv: s_(r[7]),
+        status: s_(r[8]), memo: s_(r[10]), acct: s_(r[11]), next: d_(r[12]) }; });
     return a.concat(b);
   }
   // 지수데이터 탭: A날짜 B코스피 C S&P D나스닥 E비트코인 F금(GLD) G달러 H서울아파트 I~P 보유종목 8개 (주간 종가)
@@ -932,6 +983,12 @@
     var meta = (V.W_BENCH_META || []).filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) { r = pad_(r, 4); return { ticker: s_(r[0]), value: n_(r[1]), ccy: s_(r[2]), w: n_(r[3]) }; });
     return { dates: rows.map(function (r) { return d_(r[0]); }), kospi: col(1), sp: col(2), nasdaq: col(3), btc: col(4), gold: col(5), fx: col(6), apt: col(7),
       slots: meta.map(function (m, i) { return col(8 + i); }), meta: meta };
+  }
+  // 대화 탭: B시각(일련번호) C보낸 사람 D내용
+  function chat_(rows) {
+    return (rows || []).filter(function (r) { return typeof r[0] === "number" && s_(r[2]) !== ""; })
+      .map(function (r) { return { ts: r[0], who: s_(r[1]), text: s_(r[2]) }; })
+      .sort(function (a, b) { return a.ts - b.ts; });
   }
   function one_raw_(V, k) { return V[k] && V[k][0] ? V[k][0][0] : ""; }
   function one_(V, k) { return n_(V[k][0] && V[k][0][0]); }
@@ -970,6 +1027,15 @@
         byHolding: V.W_DIV_BY.filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) { return { name: s_(r[0]), months: pad_(r.slice(1, 13), 12).map(n_) }; })
       },
       fixed: fixed_(V),
+      // 고정항목 탭 아래 '통장별 고정 흐름' (앞으로 한 달): 통장 건수 지금잔액 들어올수입 나갈출금 다음출금 예상잔액 상태
+      flow: (V.W_FLOW || []).filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) {
+        r = pad_(r, 8); return { name: s_(r[0]), cnt: s_(r[1]), balance: n_(r[2]), inc: n_(r[3]), out: n_(r[4]), next: s_(r[5]), expect: n_(r[6]), status: s_(r[7]) };
+      }),
+      // '출금 예정표': 내용 날짜 금액 빠져나갈통장 그날뒤잔액 구분 메모
+      outPlan: (V.W_OUTPLAN || []).filter(function (r) { return s_(r[0]) !== "" && typeof r[1] === "number"; }).map(function (r) {
+        r = pad_(r, 7); return { name: s_(r[0]), date: d_(r[1]), amount: n_(r[2]), acct: s_(r[3]), after: typeof r[4] === "number" ? r[4] : "", when: s_(r[5]), memo: s_(r[6]) };
+      }),
+      chat: chat_(V.W_CHAT),
       bench: bench_(V),
       // 수익률비교 탭의 시작일 입력 칸 (비우면 "")
       cmpStart: { long: typeof one_raw_(V, "W_CMP_START_LONG") === "number" ? d_(one_raw_(V, "W_CMP_START_LONG")) : "",
@@ -1100,6 +1166,17 @@
     }).then(apiGetData);
   }
 
+  /** 대화: 읽기 / 보내기 (대화 탭 맨 아래에 한 줄 추가) */
+  function apiChatGet() {
+    return gapi("GET", "/values/W_CHAT?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER").then(function (j) { return chat_(j.values); });
+  }
+  function apiChatSend(now, who, text) {
+    // now = 서울 시각 "2026-11-25 14:03:05" -> 시트 일련번호 (RAW로 써서 글자가 날짜·숫자·수식으로 바뀌지 않게)
+    var ts = new Date(now.replace(" ", "T") + "Z").getTime() / 86400000 + 25569;
+    return gapi("POST", "/values/" + enc("'대화'!B4:D4") + ":append?valueInputOption=RAW&insertDataOption=OVERWRITE",
+      { values: [[ts, s_(who), s_(text)]] }).then(apiChatGet);
+  }
+
   var API_FN = { getData: apiGetData, addTransaction: apiAdd, deleteTransaction: apiDelete, updateTransaction: apiUpdate, saveReview: apiSaveReview, addTransactions: apiAddMany, relinkPhotos: apiRelinkPhotos };
   function call(fn, args, ok) {
     if (window.__MOCK__) { setTimeout(function () { ok(window.__MOCK__); }, 10); return; }
@@ -1127,6 +1204,7 @@
   function render() {
     $("monthLabel").textContent = ymLabel(ym);
     renderHome(); renderInvest(); renderCal(); renderList(); renderForm(); renderAiAdd();
+    chatInit();
   }
   function isPC() { return window.innerWidth >= 1000; }
   // PC에서는 화면 폭에 맞춰 전체를 크게 (1280px 기준, 최대 2배)
@@ -1174,7 +1252,7 @@
     var sched = (D.fixed || []).map(function (f) {
       var d = ym + "-" + String(Math.min(Math.max(f.day || 1, 1), lastD)).padStart(2, "0");
       var done = D.ledger.some(function (x) { return x.desc === f.name && x.date.slice(0, 7) === ym; });
-      return { date: d, name: f.name, amt: f.kind === "in" ? f.amount : -f.amount, sub: (f.kind === "in" ? "고정 수입" : "고정 지출") + (f.pay ? " · " + f.pay : "") + (f.recv ? " → " + f.recv : ""), done: done };
+      return { date: d, name: f.name, amt: f.kind === "in" ? f.amount : -f.amount, sub: (f.kind === "in" ? "고정 수입" : "고정 지출") + (f.pay ? " · " + f.pay : "") + (f.recv ? " → " + f.recv : "") + (f.memo ? " · " + f.memo : ""), done: done };
     }).concat(D.cards.map(function (c) {
       return { date: c.date, name: c.name, amt: -c.amount, sub: "카드 결제", card: true, done: false };
     })).sort(function (p, q) { return p.date < q.date ? -1 : p.date > q.date ? 1 : 0; });
@@ -1196,6 +1274,8 @@
         return '<div class="list-line' + (x.done ? " done" : "") + '"><span class="d num">' + esc(x.date.slice(5).replace("-", "/")) + '</span><div class="grow"><b>' + esc(x.name) + '</b><div class="s">' + esc(x.sub) + "</div></div>" +
           badge + '<b class="num" style="color:' + (x.amt > 0 ? "var(--green)" : "var(--red)") + '">' + (x.amt > 0 ? "+" : "−") + num(Math.abs(x.amt)) + "</b></div>";
       }).join("") : '<div class="empty">고정항목 탭에 고정 수입·지출을 넣어 주세요.</div>') + "</div></div>";
+
+    h += flowCard();
 
     // upcoming dividends
     var tm = +D.today.slice(5, 7), up = "";
@@ -1223,6 +1303,27 @@
     var tb = $("trendBox"), tw = tb.clientWidth;
     tb.innerHTML = lineChart(D.nwHist, tw > 200 ? tw : 340, isPC() ? 150 : 150);
     fitNums("#homeGrid .tile .v, #homeGrid .hero-side .v");
+  }
+
+  // 통장 준비: 앞으로 한 달 동안 어느 통장에서 언제 얼마 빠지는지, 모자라는 통장은 빨간색 (고정항목 탭 아래 표에서 계산)
+  function flowCard() {
+    var fl = (D.flow || []).filter(function (f) { return f.out > 0; });
+    if (!fl.length && !(D.outPlan || []).length) return "";
+    var bad = fl.filter(function (f) { return /^⚠/.test(f.status); });
+    var plan = D.outPlan || [];
+    return '<div class="card c-flow"><h2>통장 준비<span class="sub">앞으로 한 달 고정 출금</span></h2>' +
+      (bad.length ? '<div class="flow-alert">' + bad.length + "개 통장에 돈을 더 넣어야 해요</div>" : '<div class="flow-ok">모든 통장 잔액이 충분해요</div>') +
+      fl.map(function (f) {
+        var warn = /^⚠/.test(f.status);
+        return '<div class="list-line"><div class="grow"><b>' + esc(f.name) + '</b><div class="s">다음 출금 ' + esc(f.next) + " · " + esc(f.cnt) + " " + num(f.out) + "원 · 지금 " + num(f.balance) + "원</div></div>" +
+          '<span class="badge' + (warn ? " hot" : " ok") + '">' + (warn ? esc(f.status.replace(/^⚠\s*/, "").replace(" 더 넣기", " 부족")).replace("까지 ", "까지<br>") : "충분") + "</span></div>";
+      }).join("") +
+      (plan.length ? '<details class="flow-plan"><summary>날짜별 출금 예정 ' + plan.length + "건 보기</summary>" + plan.map(function (x) {
+        var card = /^신용카드/.test(x.acct);
+        return '<div class="list-line"><span class="d num">' + esc(x.date.slice(5).replace("-", "/")) + '</span><div class="grow"><b>' + esc(x.name) + '</b><div class="s">' + esc(x.acct) + (x.memo ? " · " + esc(x.memo) : "") + "</div></div>" +
+          '<div class="amt num"><b>−' + num(x.amount) + "</b>" + (card || x.after === "" ? "" : '<small class="' + (x.after < 0 ? "up" : "") + '">남는 돈 ' + num(x.after) + "</small>") + "</div></div>";
+      }).join("") + "</details>" : "") +
+      '<div class="hint">고정항목 탭 결제수단 기준이에요. 체크카드는 연결된 통장에서, 신용카드는 카드값 날에 빠져요.</div></div>';
   }
 
   // 누가 얼마 썼을까 (가계 카드 안에 한 줄로)
@@ -1438,7 +1539,9 @@
         var days = x.date ? Math.round((new Date(D.today) - new Date(x.date)) / 864e5) : null;
         var stale = x.checked === null || days === null || days > 30;
         var sub = [x.kind, x.owner].filter(Boolean).join(" · ") + (days === null ? "" : " · 확인 " + (days <= 0 ? "오늘" : days + "일 전"));
-        return '<div class="list-line"><div class="grow"><b>' + esc(x.name) + '</b><div class="s">' + esc(sub) + "</div></div>" +
+        var fl = (D.flow || []).filter(function (f) { return f.name === x.name && f.out > 0; })[0];
+        if (fl) sub += "\n다음 출금 " + fl.next + " · 한 달 " + num(fl.out) + "원" + (/^⚠/.test(fl.status) ? " · " + fl.status.replace(/^⚠\s*/, "") : "");
+        return '<div class="list-line"><div class="grow"><b>' + esc(x.name) + '</b><div class="s">' + esc(sub).replace("\n", '<br><span class="' + (fl && /^⚠/.test(fl.status) ? "up" : "") + '">') + (fl ? "</span>" : "") + "</div></div>" +
           (stale ? '<span class="badge hot">잔액 확인 필요</span>' : "") +
           '<b class="num">' + (x.balance === null ? "-" : won(x.balance)) + "</b></div>";
       }).join("") : '<div class="empty">자산관리 탭 통장 표에 계좌를 넣어 주세요.</div>') +
@@ -2340,6 +2443,163 @@
     toast("일정 내용으로 채웠어요. 대분류·금액을 확인하고 저장하세요.");
   }
   // CAL-END
+
+  // CHAT-START ---------- 부부 대화 (카톡처럼) ----------
+  // 메시지는 시트 '대화' 탭(B 시각, C 보낸 사람, D 내용)에 쌓여요.
+  // 대화창이 열려 있으면 5초마다, 닫혀 있으면 1분마다 새 메시지를 확인해요 (앱이 화면에 보일 때만).
+  var CHAT = { open: false, timer: null, busy: false, sig: "" };
+  function chatOn() { return typeof apiChatGet === "function" || !!window.__MOCK__; }
+  function chatMe() { var m = store("chat_me"); return m && D.members.indexOf(m) >= 0 ? m : ""; }
+  function chatPeople() { return D.members.filter(function (n) { return n !== "공동"; }); }
+  function chatList() { return D.chat || []; }
+  function chatSeen() { return Number(store("chat_seen") || 0); }
+  function chatUnread() {
+    var me = chatMe(), seen = chatSeen();
+    if (!me) return chatList().length && !seen ? 1 : 0;
+    return chatList().filter(function (m) { return m.ts > seen && m.who !== me; }).length;
+  }
+  function chatBadge() {
+    var b = $("chatBtn"); if (!b) return;
+    b.style.display = chatOn() ? "" : "none";
+    var n = chatUnread(), i = $("chatDot");
+    i.textContent = n > 99 ? "99+" : String(n);
+    i.style.display = n ? "" : "none";
+  }
+  function chatTime(ts) {   // 시트 시각(일련번호) -> {d: "2026-11-25", t: "오후 2:03"}
+    var d = new Date(Math.round((ts - 25569) * 86400000));
+    var h = d.getUTCHours(), mi = String(d.getUTCMinutes()).padStart(2, "0");
+    return { d: d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"),
+      t: (h < 12 ? "오전 " : "오후 ") + ((h + 11) % 12 + 1) + ":" + mi };
+  }
+  function chatDayLabel(ds) {
+    var w = "일월화수목금토"[new Date(ds + "T00:00:00").getDay()];
+    return ds === D.today ? "오늘" : (+ds.slice(5, 7)) + "월 " + (+ds.slice(8, 10)) + "일 " + w + "요일";
+  }
+  function chatLink(s) {   // 글자는 그대로, 주소만 눌리게
+    return esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, "<br>");
+  }
+  function chatView() {
+    var v = $("chatView");
+    if (!v) {
+      v = document.createElement("div"); v.id = "chatView"; v.className = "chat-view";
+      v.innerHTML = '<div class="chat-top"><button type="button" id="chatClose" aria-label="닫기">‹</button><b id="chatTitle">대화</b><span id="chatMeBtn"></span></div>' +
+        '<div class="chat-body" id="chatBody"></div>' +
+        '<form class="chat-bar" id="chatForm"><textarea id="chatInput" rows="1" placeholder="메시지 보내기"></textarea>' +
+        '<button type="submit" id="chatSend" aria-label="보내기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>';
+      document.body.appendChild(v);
+    }
+    return v;
+  }
+  function chatRender(keepScroll) {
+    var body = $("chatBody"); if (!body) return;
+    var me = chatMe(), list = chatList();
+    var others = chatPeople().filter(function (n) { return n !== me; });
+    $("chatTitle").textContent = me && others.length ? others.join(", ") : "부부 대화";
+    $("chatMeBtn").innerHTML = me ? '<button type="button" id="chatWho" title="나 바꾸기">나: ' + esc(me) + "</button>" : "";
+    if (!me) {
+      body.innerHTML = '<div class="chat-pick"><b>이 폰은 누구 폰인가요?</b><p>한 번만 고르면 돼요. 내 말풍선은 오른쪽 노란색으로 보여요.</p>' +
+        chatPeople().map(function (n) { return '<button type="button" data-chat-me="' + esc(n) + '">' + esc(n) + "</button>"; }).join("") + "</div>";
+      $("chatForm").style.display = "none";
+      return;
+    }
+    $("chatForm").style.display = "";
+    var atBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
+    var h = "", lastD = "", prev = null;
+    list.slice(-300).forEach(function (m, i, a) {
+      var tm = chatTime(m.ts), mine = m.who === me;
+      if (tm.d !== lastD) { h += '<div class="chat-day"><span>' + chatDayLabel(tm.d) + "</span></div>"; lastD = tm.d; prev = null; }
+      var next = a[i + 1], nt = next ? chatTime(next.ts) : null;
+      var first = !prev || prev.who !== m.who;
+      var showTime = !next || next.who !== m.who || nt.t !== tm.t || nt.d !== tm.d;   // 같은 분에 이어 보낸 건 마지막에만 시각
+      h += '<div class="chat-msg' + (mine ? " me" : "") + (first ? " first" : "") + '">' +
+        (!mine && first ? '<div class="chat-name"><i style="background:' + (whoColor(m.who) || "#8b95a1") + '"></i>' + esc(m.who || "?") + "</div>" : "") +
+        '<div class="chat-line"><div class="bub">' + chatLink(m.text) + "</div>" + (showTime ? '<span class="tm">' + tm.t + "</span>" : "") + "</div></div>";
+      prev = m;
+    });
+    body.innerHTML = h || '<div class="chat-empty">아직 대화가 없어요.<br>장 볼 거, 이번 달 지출 얘기, 뭐든 남겨 보세요.</div>';
+    if (!keepScroll || atBottom) body.scrollTop = body.scrollHeight;
+  }
+  function chatMarkSeen() {
+    var l = chatList(); if (!l.length) return;
+    store("chat_seen", String(l[l.length - 1].ts)); chatBadge();
+  }
+  function chatOpen() {
+    CHAT.open = true;
+    chatView().classList.add("on"); document.body.classList.add("chat-lock");
+    chatRender(); chatMarkSeen(); chatPoll(true);
+  }
+  function chatClose() {
+    CHAT.open = false;
+    var v = $("chatView"); if (v) v.classList.remove("on");
+    document.body.classList.remove("chat-lock");
+    if ($("chatInput")) $("chatInput").blur();
+    chatSchedule();
+  }
+  function chatSet(list) {
+    var sig = list.length + ":" + (list.length ? list[list.length - 1].ts + list[list.length - 1].text : "");
+    var changed = sig !== CHAT.sig; CHAT.sig = sig; D.chat = list;
+    if (CHAT.open && changed) { chatRender(true); chatMarkSeen(); }
+    chatBadge();
+  }
+  function chatPoll(now) {
+    clearTimeout(CHAT.timer);
+    if (!chatOn() || window.__MOCK__) { chatSchedule(); return; }
+    if (!now && document.hidden) { chatSchedule(); return; }
+    if (CHAT.busy) { chatSchedule(); return; }
+    CHAT.busy = true;
+    apiChatGet().then(function (list) { CHAT.busy = false; chatSet(list); chatSchedule(); })
+      .catch(function () { CHAT.busy = false; chatSchedule(); });
+  }
+  function chatSchedule() {
+    clearTimeout(CHAT.timer);
+    if (!chatOn() || window.__MOCK__) return;
+    CHAT.timer = setTimeout(chatPoll, CHAT.open ? 5000 : 60000);
+  }
+  function chatSendNow() {
+    var inp = $("chatInput"), text = (inp.value || "").replace(/\s+$/, "").replace(/^\s+/, "");
+    if (!text || CHAT.sending) return;
+    if (text.length > 1000) { toast("한 번에 1000자까지 보낼 수 있어요."); return; }
+    var me = chatMe(); if (!me) return;
+    var now = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
+    var d = new Date(now.replace(" ", "T") + "Z"), ts = d.getTime() / 86400000 + 25569;
+    var temp = { ts: ts, who: me, text: text, pending: true };
+    D.chat = chatList().concat([temp]);
+    inp.value = ""; chatGrow(); chatRender(); inp.focus();
+    if (window.__MOCK__) { temp.pending = false; chatMarkSeen(); return; }
+    CHAT.sending = true;
+    apiChatSend(now, me, text).then(function (list) { CHAT.sending = false; chatSet(list); chatMarkSeen(); })
+      .catch(function (e) {
+        CHAT.sending = false;
+        D.chat = chatList().filter(function (m) { return m !== temp; }); chatRender();
+        inp.value = text; chatGrow();
+        toast("못 보냈어요: " + (e && e.message ? e.message : e));
+      });
+  }
+  function chatGrow() { var t = $("chatInput"); if (!t) return; t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }
+  function chatInit() {
+    if (CHAT.inited) { chatBadge(); return; }
+    CHAT.inited = true;
+    var l = chatList();
+    CHAT.sig = l.length + ":" + (l.length ? l[l.length - 1].ts + l[l.length - 1].text : "");
+    if (!store("chat_seen") && l.length) store("chat_seen", String(l[l.length - 1].ts));   // 처음 켰을 때 예전 대화는 읽은 걸로
+    chatBadge(); chatSchedule();
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) chatPoll(true); });
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      if (b.id === "chatBtn") { chatOpen(); return; }
+      if (b.id === "chatClose") { chatClose(); return; }
+      if (b.id === "chatWho") { store("chat_me", ""); chatRender(); return; }
+      if (b.dataset.chatMe) { store("chat_me", b.dataset.chatMe); chatRender(); chatMarkSeen(); setTimeout(function () { $("chatInput").focus(); }, 50); return; }
+    });
+    document.addEventListener("submit", function (e) { if (e.target.id === "chatForm") { e.preventDefault(); chatSendNow(); } });
+    document.addEventListener("input", function (e) { if (e.target.id === "chatInput") chatGrow(); });
+    document.addEventListener("keydown", function (e) {
+      // PC: Enter 보내기, Shift+Enter 줄바꿈 / 폰: 엔터는 줄바꿈 (보내기 버튼으로)
+      if (e.target.id === "chatInput" && e.key === "Enter" && !e.shiftKey && !e.isComposing && isPC()) { e.preventDefault(); chatSendNow(); }
+      if (e.key === "Escape" && CHAT.open) chatClose();
+    });
+  }
+  // CHAT-END
 
   // ---------- events ----------
   document.addEventListener("click", function (e) {
