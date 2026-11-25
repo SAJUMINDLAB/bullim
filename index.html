@@ -516,13 +516,13 @@
         return shape_(V);
       });
   }
-  // 고정항목: 수입 B항목명 C금액 D입금일 E입금통장 / 지출 I항목명 J대분류 K금액 L납부일 M결제수단
+  // 고정항목: 수입 B항목명 C금액 D입금일 E입금통장 / 지출 I항목명 J대분류 K금액 L납부일 M결제수단 N받는통장
   function fixed_(V) {
     var day = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ""), 10); return isFinite(n) ? n : 0; };
     var a = (V.W_FIXED_IN || []).filter(function (r) { return s_(r[0]) !== ""; })
       .map(function (r) { r = pad_(r, 4); return { kind: "in", name: s_(r[0]), amount: n_(r[1]), day: day(r[2]), pay: s_(r[3]) }; });
     var b = (V.W_FIXED_OUT || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 5); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]) }; });
+      .map(function (r) { r = pad_(r, 6); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]), recv: s_(r[5]) }; });
     return a.concat(b);
   }
   // 지수데이터 탭: A날짜 B코스피 C S&P D나스닥 E비트코인 F금(GLD) G달러 H서울아파트 I~P 보유종목 8개 (주간 종가)
@@ -538,10 +538,11 @@
   function one_(V, k) { return n_(V[k][0] && V[k][0][0]); }
   function shape_(V) {
     var ledger = V.W_LEDGER.map(function (r, i) {
-      r = pad_(r, 12);
+      // B날짜 C작성자 D대분류 E항목 F내용 G원 H$ I결제수단 J받는통장 K메모 L구분 M결제 N원화
+      r = pad_(r, 13);
       return { row: 4 + i, date: d_(r[0]), who: s_(r[1]), cat: s_(r[2]), item: s_(r[3]), desc: s_(r[4]),
-        krw: r[5] === "" ? "" : n_(r[5]), usd: r[6] === "" ? "" : n_(r[6]), pay: s_(r[7]), memo: s_(r[8]),
-        type: s_(r[9]), payType: s_(r[10]), amt: n_(r[11]) };
+        krw: r[5] === "" ? "" : n_(r[5]), usd: r[6] === "" ? "" : n_(r[6]), pay: s_(r[7]), recv: s_(r[8]), memo: s_(r[9]),
+        type: s_(r[10]), payType: s_(r[11]), amt: n_(r[12]) };
     }).filter(function (x) { return x.date; });
     var kpi = V.W_DIV_KPI[0] || [];
     return {
@@ -582,9 +583,9 @@
     };
   }
 
-  /** 내역입력 날짜순 정렬 (이미 날짜순이면 건너뜀, 손으로 적는 칸 B~J만) */
+  /** 내역입력 날짜순 정렬 (이미 날짜순이면 건너뜀, 손으로 적는 칸 B~K만) */
   function sortLedger_() {
-    return gapi("GET", "/values:batchGet?ranges=" + enc("'내역입력'!B4:B1003") + "&ranges=" + enc("'내역입력'!K1:M1") +
+    return gapi("GET", "/values:batchGet?ranges=" + enc("'내역입력'!B4:B1003") + "&ranges=" + enc("'내역입력'!L1:N1") +
       "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER").then(function (j) {
       var col = ((j.valueRanges[0] && j.valueRanges[0].values) || []).map(function (r) { return r[0]; });
       var last = -1;
@@ -594,14 +595,14 @@
       for (var i = 0; i <= last; i++) { var v = col[i]; if (typeof v !== "number" || v < prev) { ok = false; break; } prev = v; }
       if (ok) return;
       var view = ((j.valueRanges[1] && j.valueRanges[1].values) || [[]])[0] || [];
-      var picks = [[13, "N", view[0]], [14, "O", view[2]]].filter(function (x) {
+      var picks = [[14, "O", view[0]], [15, "P", view[2]]].filter(function (x) {
         return x[2] !== undefined && x[2] !== "" && String(x[2]) !== "전체" && isFinite(Number(x[2]));
       });
       var G = CFG.ledgerSheetId;
-      var fr = { sheetId: G, startRowIndex: 2, endRowIndex: 1003, startColumnIndex: 1, endColumnIndex: 15 };
+      var fr = { sheetId: G, startRowIndex: 2, endRowIndex: 1003, startColumnIndex: 1, endColumnIndex: 16 };
       var reqs = [];
       if (picks.length) reqs.push({ setBasicFilter: { filter: { range: fr } } });
-      reqs.push({ sortRange: { range: { sheetId: G, startRowIndex: 3, endRowIndex: 4 + last, startColumnIndex: 1, endColumnIndex: 10 },
+      reqs.push({ sortRange: { range: { sheetId: G, startRowIndex: 3, endRowIndex: 4 + last, startColumnIndex: 1, endColumnIndex: 11 },
         sortSpecs: [{ dimensionIndex: 1, sortOrder: "ASCENDING" }] } });
       if (picks.length) reqs.push({ setBasicFilter: { filter: { range: fr, filterSpecs: picks.map(function (x) {
         return { columnIndex: x[0], filterCriteria: { condition: { type: "CUSTOM_FORMULA",
@@ -617,12 +618,12 @@
       for (var i = 0; i < 1000; i++) { var v = col[i] && col[i][0]; if (v === undefined || v === "") { idx = i; break; } }
       if (idx < 0) throw new Error("내역입력 탭에 빈 줄이 없어요.");
       var row = 4 + idx, usd = t.currency === "USD", amt = Number(t.amount);
-      return gapi("PUT", "/values/" + enc("'내역입력'!B" + row + ":J" + row) + "?valueInputOption=USER_ENTERED",
-        { values: [[t.date, txt_(t.who), txt_(t.cat), txt_(t.item), txt_(t.desc), usd ? "" : amt, usd ? amt : "", txt_(t.pay), txt_(t.memo)]] });
+      return gapi("PUT", "/values/" + enc("'내역입력'!B" + row + ":K" + row) + "?valueInputOption=USER_ENTERED",
+        { values: [[t.date, txt_(t.who), txt_(t.cat), txt_(t.item), txt_(t.desc), usd ? "" : amt, usd ? amt : "", txt_(t.pay), txt_(t.recv), txt_(t.memo)]] });
     }).then(sortLedger_).then(apiGetData);
   }
   function apiDelete(row, date, desc) {
-    var a1 = "'내역입력'!B" + row + ":J" + row;
+    var a1 = "'내역입력'!B" + row + ":K" + row;
     return gapi("GET", "/values/" + enc(a1) + "?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER").then(function (j) {
       var r = (j.values && j.values[0]) || [];
       if (d_(r[0]) !== date || s_(r[4]) !== s_(desc)) throw new Error("그 사이에 내용이 바뀌었어요. 새로고침 후 다시 시도해 주세요.");
@@ -632,13 +633,13 @@
 
   function apiUpdate(row, date, desc, t) {
     if (!t || !t.date || !t.cat || !Number(t.amount)) return Promise.reject(new Error("날짜, 대분류, 금액은 꼭 넣어 주세요."));
-    var a1 = "'내역입력'!B" + row + ":J" + row;
+    var a1 = "'내역입력'!B" + row + ":K" + row;
     return gapi("GET", "/values/" + enc(a1) + "?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER").then(function (j) {
       var r = (j.values && j.values[0]) || [];
       if (d_(r[0]) !== date || s_(r[4]) !== s_(desc)) throw new Error("그 사이에 내용이 바뀌었어요. 새로고침 후 다시 시도해 주세요.");
       var usd = t.currency === "USD", amt = Number(t.amount);
       return gapi("PUT", "/values/" + enc(a1) + "?valueInputOption=USER_ENTERED",
-        { values: [[t.date, txt_(t.who), txt_(t.cat), txt_(t.item), txt_(t.desc), usd ? "" : amt, usd ? amt : "", txt_(t.pay), txt_(t.memo)]] });
+        { values: [[t.date, txt_(t.who), txt_(t.cat), txt_(t.item), txt_(t.desc), usd ? "" : amt, usd ? amt : "", txt_(t.pay), txt_(t.recv), txt_(t.memo)]] });
     }).then(sortLedger_).then(apiGetData);
   }
 
@@ -715,7 +716,7 @@
     var sched = (D.fixed || []).map(function (f) {
       var d = ym + "-" + String(Math.min(Math.max(f.day || 1, 1), lastD)).padStart(2, "0");
       var done = D.ledger.some(function (x) { return x.desc === f.name && x.date.slice(0, 7) === ym; });
-      return { date: d, name: f.name, amt: f.kind === "in" ? f.amount : -f.amount, sub: (f.kind === "in" ? "고정 수입" : "고정 지출") + (f.pay ? " · " + f.pay : ""), done: done };
+      return { date: d, name: f.name, amt: f.kind === "in" ? f.amount : -f.amount, sub: (f.kind === "in" ? "고정 수입" : "고정 지출") + (f.pay ? " · " + f.pay : "") + (f.recv ? " → " + f.recv : ""), done: done };
     }).concat(D.cards.map(function (c) {
       return { date: c.date, name: c.name, amt: -c.amount, sub: "카드 결제", card: true, done: false };
     })).sort(function (p, q) { return p.date < q.date ? -1 : p.date > q.date ? 1 : 0; });
@@ -1004,7 +1005,7 @@
   function calAmt(n) { return isPC() ? num(n) : n >= 1e4 ? (n / 1e4).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, "") + "만" : num(n); }
   function txLine(x) {
     var usd = x.usd !== "" && x.usd ? ' <span class="muted">($' + Number(x.usd).toFixed(2) + ")</span>" : "";
-    return '<div class="list-line tx"><div class="grow"><b>' + esc(x.desc || x.item || x.cat) + '</b><div class="s">' + esc([x.cat, x.item].filter(Boolean).join(" · ")) + " · " + esc(x.who) + " · " + esc(x.pay) + (x.memo ? " · " + esc(x.memo) : "") + "</div></div>" +
+    return '<div class="list-line tx"><div class="grow"><b>' + esc(x.desc || x.item || x.cat) + '</b><div class="s">' + esc([x.cat, x.item].filter(Boolean).join(" · ")) + " · " + esc(x.who) + " · " + esc(x.pay) + (x.recv ? " → " + esc(x.recv) : "") + (x.memo ? " · " + esc(x.memo) : "") + "</div></div>" +
       '<span class="amt num t-' + esc(x.type) + '">' + (x.type === "지출" ? "−" : x.type === "수입" ? "+" : "") + num(x.amt) + usd + "</span>" +
       '<span class="btns"><button class="edit" data-row="' + x.row + '">수정</button>' +
       '<button class="del" data-row="' + x.row + '" data-date="' + esc(x.date) + '" data-desc="' + esc(x.desc) + '">삭제</button></span></div>';
@@ -1141,6 +1142,10 @@
       '<div class="hint" id="fAmtHint"></div></div>' +
       '<div class="field"><label>내용</label><input class="input" id="fDesc" placeholder="' + (form.cat === "금융소득" ? "예: SCHD 배당 (티커를 넣으면 종목별로 모여요)" : form.cat === "카드대금" ? "예: 생활비 카드" : "예: 마트 장보기") + '" autocomplete="off"></div>' +
       '<div class="field"><label>결제수단</label><select class="input" id="fPay">' + pays.map(function (p) { return '<option' + (p === payDefault ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") + "</select></div>" +
+      // 받는 통장: 이체·저축/투자일 때만 (통장끼리 옮기거나 적금에 넣는 돈 → 그 통장 잔액에 더해짐)
+      (form.group === "이체" || form.group === "저축/투자" ? '<div class="field"><label>받는 통장 (선택)</label><select class="input" id="fRecv"><option value="">없음</option>' +
+        (D.accounts || []).map(function (a) { return '<option' + (editing && editing.recv === a.name ? " selected" : "") + ">" + esc(a.name) + "</option>"; }).join("") +
+        '</select><div class="hint">고르면 그 통장 잔액에 자동으로 더해져요.</div></div>' : "") +
       '<div class="field"><label>메모 (선택)</label><input class="input" id="fMemo" autocomplete="off"></div>' +
       (editing ? '<div class="form-actions"><button class="cancel" id="fCancel">취소</button><button class="save" id="fSave">수정 저장</button></div>' : '<button class="save" id="fSave">저장하기</button>');
     var keep = { amt: $("fAmt") ? $("fAmt").value : "", desc: $("fDesc") ? $("fDesc").value : "", memo: $("fMemo") ? $("fMemo").value : "" };
@@ -1167,7 +1172,7 @@
     var grp = D.cats.filter(function (c) { return c.name === x.cat; })[0];
     form.group = grp ? grp.group : (x.type || "지출");
     form.cat = x.cat; form.item = x.item; form.currency = x.usd ? "USD" : "KRW";
-    editing = { row: x.row, date: x.date, desc: x.desc, who: x.who, pay: x.pay, back: back };
+    editing = { row: x.row, date: x.date, desc: x.desc, who: x.who, pay: x.pay, recv: x.recv, back: back };
     showView("add");
     renderForm();
     $("fDate").value = x.date;
@@ -1185,7 +1190,7 @@
     if (!amt) { toast("금액을 넣어 주세요."); return; }
     if (!form.cat) { toast("대분류를 골라 주세요."); return; }
     var t = { date: $("fDate").value, who: who ? who.v : "", cat: form.cat, item: form.item, desc: $("fDesc").value.trim(),
-      amount: amt, currency: form.currency, pay: $("fPay").value, memo: $("fMemo").value.trim() };
+      amount: amt, currency: form.currency, pay: $("fPay").value, recv: $("fRecv") ? $("fRecv").value : "", memo: $("fMemo").value.trim() };
     if (editing) {
       var ed = editing;
       $("fSave").disabled = true; $("fSave").textContent = "고치는 중…";
