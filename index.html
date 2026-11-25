@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>불림</title>
 <meta name="apple-mobile-web-app-title" content="불림">
 <meta name="application-name" content="불림">
@@ -426,6 +426,13 @@
   /* 구글 캘린더 일정 */
   .cal-cell .evd { display: flex; gap: 2px; margin-top: auto; padding-top: 2px; }
   .cal-cell .evd i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+  .ev-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--ink); }
+  .ev-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .ev-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .ev-legend .muted { font-weight: 400; margin-left: auto; }
+  .ev .grow small em { font-style: normal; font-weight: 700; }
+  /* 폰에서 입력칸을 누를 때 화면이 확대되지 않게 (아이폰은 16px 미만 글자에서 자동 확대) */
+  @media (max-width: 999px) { input, textarea, select { font-size: 16px !important; } }
   .ev-cost { margin-top: 10px; font-size: 12.5px; color: var(--muted); text-align: right; }
   .ev-cost b { color: var(--ink); }
   .ev-sec { margin-bottom: 6px; }
@@ -898,7 +905,7 @@
   var NAMES = ["W_LEDGER", "W_CATS", "W_ITEMS", "W_MEMBERS", "W_PAYS", "W_OTHER", "W_HOLDINGS", "W_CARDS",
     "W_DIV_KPI", "W_DIV_MONTH", "W_DIV_BY", "W_NW_HIST", "W_GOALS", "W_PENSION", "NET_WORTH", "W_TOTAL_ASSET",
     "W_DEBT", "W_FX", "W_CASH", "W_US_VALUE", "W_KR_VALUE", "W_US_USD_RET", "INVEST_COST", "INVEST_VALUE",
-    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS"];
+    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS", "W_MEMBER_MAIL"];
   function apiGetData() {
     var q = NAMES.map(function (x) { return "ranges=" + enc(x); }).join("&");
     return gapi("GET", "/values:batchGet?" + q + "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER")
@@ -941,6 +948,7 @@
       today: todaySeoul(), me: "",
       aiKey: s_(one_raw_(V, "W_AI_KEY")).trim(),
       photoUrl: s_(one_raw_(V, "W_PHOTO_URL")).trim(),
+      memberMails: (V.W_MEMBER_MAIL || []).map(function (r) { return s_(r[0]).trim().toLowerCase(); }),
       // 사진 탭: B날짜 C누가 D내용 E금액 F사진ID G작은사진ID H설명 I올린시각
       photos: (V.W_PHOTOS || []).map(function (r, i) {
         r = pad_(r, 8);
@@ -1483,7 +1491,7 @@
     var inc = monthSum("수입", ym), exp = monthSum("지출", ym), sav = monthSum("저축/투자", ym);
     var left = '<div class="card"><h2>' + esc(ymLabel(ym)) + ' 달력<span class="sub"><b style="color:var(--green)">수입</b> · <b style="color:var(--red)">지출</b> · <b style="color:var(--blue)">저축/투자</b></span></h2>' +
       '<div class="cal-head">' + "일월화수목금토".split("").map(function (w) { return "<div>" + w + "</div>"; }).join("") + "</div>" +
-      '<div class="cal-grid">' + cells + "</div>" +
+      '<div class="cal-grid">' + cells + "</div>" + calLegend() +
       '<div class="cal-sum">' + tile("수입", sumAmt(inc), "var(--green)") + tile("지출", sumAmt(exp), "var(--red)") + tile("남은 돈", sumAmt(inc - exp - sav), "var(--navy)") + "</div>" +
       (calReady() && calMonthCost(ym) ? '<div class="ev-cost">이번 달 일정 예상 비용 <b class="num">' + won(calMonthCost(ym)) + "</b></div>" : "") + "</div>";
     var rows = D.ledger.filter(function (x) { return x.date === selDay; }).sort(function (p, q) { return q.row - p.row; });
@@ -2211,6 +2219,14 @@
       });
     });
   }
+  // 일정 만든 사람(구글 계정) → 구성원 이름·색 (설정 J18:J19, 구성원 순서대로)
+  var MEMBER_COLORS = ["#3182f6", "#eb6834", "#12b886", "#9c36b5"];
+  function calWho(email) { var i = (D.memberMails || []).indexOf(String(email || "").toLowerCase()); return i >= 0 ? (D.members[i] || "") : ""; }
+  function whoColor(n) { var i = D.members.indexOf(n); return i >= 0 ? MEMBER_COLORS[i % MEMBER_COLORS.length] : ""; }
+  function calLegend() {
+    if (!calReady() || !calHasScope() || !(D.memberMails || []).length) return "";
+    return '<div class="ev-legend">' + D.members.map(function (n) { return '<span><i style="background:' + whoColor(n) + '"></i>' + esc(n) + "</span>"; }).join("") + '<span class="muted">일정 만든 사람</span></div>';
+  }
   function calIsHoliday(c) { return /holiday/i.test(c.id || ""); }
   function calLoadList() {
     if (CAL.list) return Promise.resolve(CAL.list);
@@ -2242,7 +2258,8 @@
         return calFetch("/calendars/" + encodeURIComponent(c.id) + "/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=" + encodeURIComponent(t0) + "&timeMax=" + encodeURIComponent(t1))
           .then(function (j) { return (j.items || []).filter(function (e) { return e.status !== "cancelled"; }).map(function (e) {
             var allDay = !!(e.start && e.start.date), sd = allDay ? e.start.date : String(e.start && e.start.dateTime || "").slice(0, 10);
-            return { id: e.id, cal: c.id, calName: c.name, color: c.color, canEdit: c.canEdit, holiday: c.holiday, title: e.summary || "(제목 없음)",
+            var who = c.holiday ? "" : (calWho(e.creator && e.creator.email) || (c.primary ? calWho(c.id) : ""));
+            return { id: e.id, cal: c.id, calName: c.name, color: who ? whoColor(who) : c.color, who: who, canEdit: c.canEdit, holiday: c.holiday, title: e.summary || "(제목 없음)",
               date: sd, end: allDay ? calAddDays(e.end.date, -1) : sd, allDay: allDay,
               time: allDay ? "" : String(e.start.dateTime).slice(11, 16), cost: calCost(e), loc: e.location || "" };
           }); })
@@ -2273,7 +2290,7 @@
     else if (!list.length && !CAL.adding) h += '<div class="empty">이 날은 일정이 없어요.</div>';
     h += list.map(function (e) {
       return '<div class="ev"><i style="background:' + esc(e.color) + '"></i><span class="t">' + (e.allDay ? "종일" : esc(e.time)) + '</span><span class="grow"><b>' + esc(e.title) + "</b><small>" +
-        esc(e.calName) + (e.cost ? " · 예상 " + won(e.cost) : "") + (e.loc ? " · " + esc(e.loc) : "") + "</small></span>" +
+        (e.who ? '<em style="color:' + esc(e.color) + '">' + esc(e.who) + "</em> · " : "") + esc(e.calName) + (e.cost ? " · 예상 " + won(e.cost) : "") + (e.loc ? " · " + esc(e.loc) : "") + "</small></span>" +
         (e.holiday ? "" : '<button type="button" class="ev-btn" data-ev-spend="' + esc(e.id) + '">지출 입력</button>') +
         (e.canEdit && !e.holiday ? '<button type="button" class="ev-btn del" data-ev-del="' + esc(e.id) + '">삭제</button>' : "") + "</div>";
     }).join("");
