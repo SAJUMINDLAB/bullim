@@ -419,6 +419,14 @@
   .catgrid button .ci { width: 50px; height: 50px; flex-basis: 50px; border-radius: 17px; }
   .catgrid button.on { background: none; color: var(--ink); }
   .catgrid button.on .ci { background: var(--navy); color: #fff; }
+  .sug { margin-top: 8px; }
+  .sug:empty { display: none; }
+  .sug-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e3e7ee; background: #fff; border-radius: 999px; padding: 5px 12px 5px 5px; font-size: 13px; color: var(--ink); max-width: 100%; }
+  .sug-chip .ci { width: 28px; height: 28px; flex-basis: 28px; border-radius: 50%; }
+  .sug-chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sug-chip em { font-style: normal; font-size: 11px; font-weight: 700; color: #b07a00; background: #fff4d6; border-radius: 999px; padding: 2px 7px; }
+  .sug-on { font-size: 12.5px; color: var(--muted); }
+  .sug-on b { color: var(--ink); }
   .rv-head { background: var(--soft); color: var(--ink); border-radius: 14px; font-weight: 600; }
   .rv-sec > b { font-weight: 600; font-size: 13px; }
   .q-sum { border-radius: 14px; }
@@ -572,6 +580,132 @@
     return '<svg class="svi" viewBox="0 0 24 24" width="' + (size || 20) + '" height="' + (size || 20) + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + "</svg>";
   }
   // ICONS-END
+  // MATCH-START 내용 → 대분류·항목 자동 추천 (앱 index.html 과 시트 가계부도우미.gs 가 같은 규칙을 씀. 원본: 빌드도구/자동분류.js)
+  // 1) 예전에 똑같은 내용으로 적은 내역 → 2) 비슷한 내용 → 3) 아래 단어 사전 순서로 찾아요.
+  var MATCH_RULES = [
+    ["(동성로|성서).*(관리비|가스|전기|수도|인터넷|청소|세탁|소모품|비품|수리)|(관리비|가스|전기|수도|인터넷|청소|세탁|소모품|비품|수리).*(동성로|성서)", "임대운영비", ""],
+    ["삼삼엠투|33m2|에어비앤비정산|숙박정산", "임대수입", ""],
+    ["카드대금|카드값|카드결제대금", "카드대금", "카드값"],
+    ["대출이자|전세대출|주담대|신용대출|대출", "대출이자", ""],
+    ["유튜브\\s*프리미엄|youtube\\s*premium", "문화/여가", "구독서비스"],
+    ["chatgpt|openai|claude|anthropic|gemini|미드저니|midjourney|perplexity|cursor|copilot|gpt", "IT/구독", "AI 서비스"],
+    ["aws|amazon\\s*web|gcp|구글\\s*클라우드|azure|vercel|netlify|cloudflare|호스팅|서버|카페24|digitalocean|heroku|supabase|firebase", "IT/구독", "서버/호스팅"],
+    ["도메인|domain|가비아|whois", "IT/구독", "도메인"],
+    ["icloud|아이클라우드|구글\\s*원|google\\s*one|드롭박스|dropbox|마이박스|onedrive", "IT/구독", "클라우드"],
+    ["프리미어|파이널컷|캡컷|capcut|vrew|브루|에픽사운드|epidemic|아트리스트|어도비|adobe|캔바|canva|미리캔버스", "콘텐츠제작비", "편집/디자인 툴"],
+    ["노션|notion|ms\\s*365|오피스\\s*365|microsoft\\s*365|figma|피그마|앱\\s*구독", "IT/구독", "소프트웨어"],
+    ["애드센스|adsense|유튜브\\s*(수익|정산|광고)", "콘텐츠수익", "유튜브"],
+    ["애드포스트|블로그\\s*(수익|정산)|티스토리\\s*수익", "콘텐츠수익", "블로그"],
+    ["협찬|원고료|광고비\\s*입금", "콘텐츠수익", "협찬/광고"],
+    ["쿠팡\\s*파트너스|제휴\\s*수익|어필리에이트", "콘텐츠수익", "제휴마케팅"],
+    ["넷플릭스|netflix|티빙|tving|웨이브|wavve|왓챠|디즈니|disney|쿠팡\\s*플레이|멜론|지니뮤직|스포티파이|spotify|애플\\s*뮤직|밀리의\\s*서재|리디", "문화/여가", "구독서비스"],
+    ["cgv|메가박스|롯데시네마|영화|공연|뮤지컬|콘서트|전시회", "문화/여가", "영화/공연"],
+    ["배민|배달의민족|요기요|쿠팡\\s*이츠|땡겨요|배달", "식비", "배달"],
+    ["스타벅스|starbucks|이디야|메가커피|메가\\s*mgc|컴포즈|빽다방|투썸|할리스|폴바셋|커피빈|블루보틀|카페|커피|coffee|아메리카노|라떼", "카페/간식", "커피"],
+    ["베이커리|파리바게뜨|뚜레쥬르|케이크|배스킨|아이스크림|설빙|디저트|도넛|던킨|빵집", "카페/간식", "디저트"],
+    ["편의점|gs25|\\bcu\\b|씨유|세븐일레븐|이마트24|간식|과자", "카페/간식", "간식"],
+    ["이마트|홈플러스|롯데마트|코스트코|트레이더스|하나로|마트|컬리|오아시스|쿠팡\\s*프레시|장보기|식자재|노브랜드", "식비", "장보기"],
+    ["식당|외식|맛집|고기|치킨|피자|버거|맥도날드|롯데리아|맘스터치|서브웨이|김밥|국밥|분식|초밥|스시|라멘|파스타|횟집|술집|호프|포차|점심|저녁", "식비", "외식"],
+    ["주유|sk\\s*에너지|gs\\s*칼텍스|s-?oil|에쓰오일|오일뱅크|알뜰주유|충전소|전기차\\s*충전", "교통/차량", "주유"],
+    ["택시|카카오\\s*t|우티|타다|아이엠", "교통/차량", "택시"],
+    ["ktx|srt|코레일|기차|고속버스|버스|지하철|교통카드|티머니", "교통/차량", "대중교통"],
+    ["주차|통행료|하이패스|톨게이트", "교통/차량", "주차/통행료"],
+    ["정비|세차|타이어|엔진오일|카센터|블루핸즈|오토큐", "교통/차량", "정비"],
+    ["할부|캐피탈", "교통/차량", "할부금"],
+    ["자동차\\s*보험|다이렉트", "보험", "자동차보험"],
+    ["실비|실손", "보험", "실손보험"],
+    ["보험", "보험", "보험료"],
+    ["휴대폰|핸드폰|통신비|skt|sk\\s*텔레콤|\\bkt\\b|lg\\s*u|유플러스|알뜰폰|요금제", "통신", "휴대폰"],
+    ["인터넷|와이파이|iptv", "통신", "인터넷"],
+    ["월세", "주거/관리비", "월세"],
+    ["관리비", "주거/관리비", "관리비"],
+    ["전기|가스|한전", "주거/관리비", "전기/가스"],
+    ["수도", "주거/관리비", "수도"],
+    ["병원|의원|치과|한의원|내과|피부과|안과|이비인후과|정형외과|산부인과|소아과|검진|진료", "의료/건강", "병원"],
+    ["약국|처방", "의료/건강", "약국"],
+    ["영양제|비타민|유산균|오메가", "의료/건강", "영양제"],
+    ["헬스|필라테스|요가|\\bpt\\b|수영|운동", "의료/건강", "운동"],
+    ["미용실|헤어|네일|피부관리|왁싱", "쇼핑/미용", "미용실"],
+    ["올리브영|화장품|세포라|이니스프리", "쇼핑/미용", "화장품"],
+    ["무신사|29cm|지그재그|에이블리|유니클로|자라|zara|옷|의류|신발|나이키|아디다스", "쇼핑/미용", "의류"],
+    ["쿠팡|11번가|g마켓|지마켓|옥션|스마트스토어|네이버\\s*쇼핑|알리|테무|temu", "쇼핑/미용", "온라인쇼핑"],
+    ["다이소|생필품|휴지|세제|샴푸|치약|생활용품", "생활용품", "생필품"],
+    ["이케아|ikea|가구|가전|하이마트|전자랜드", "생활용품", "가전/가구"],
+    ["항공|대한항공|아시아나|제주항공|진에어|티웨이|에어부산", "여행", "항공/교통"],
+    ["호텔|숙소|에어비앤비|airbnb|야놀자|여기어때|아고다|agoda|부킹닷컴|펜션|리조트", "여행", "숙소"],
+    ["여행", "여행", "여행 경비"],
+    ["교보문고|yes24|예스24|알라딘|도서|책", "교육/자기계발", "도서"],
+    ["강의|클래스101|인프런|유데미|udemy|패스트캠퍼스|학원|수강", "교육/자기계발", "강의"],
+    ["자격증|토익|시험", "교육/자기계발", "자격증"],
+    ["축의금|조의금|부조|결혼식|돌잔치|장례", "경조사/선물", "경조사비"],
+    ["부모님|어머니|아버지|엄마|아빠", "경조사/선물", "부모님 용돈"],
+    ["선물|생일", "경조사/선물", "선물"],
+    ["용돈", "용돈", ""],
+    ["재산세", "세금/공과금", "재산세"],
+    ["자동차세", "세금/공과금", "자동차세"],
+    ["소득세|부가세|부가가치세", "세금/공과금", "소득세"],
+    ["세금|지방세|과태료", "세금/공과금", "기타 세금"],
+    ["연금저축", "투자", "연금저축"],
+    ["irp", "투자", "IRP"],
+    ["\\bisa\\b", "투자", "ISA"],
+    ["etf", "투자", "ETF 매수"],
+    ["주식|증권|매수", "투자", "주식 매수"],
+    ["적금", "저축", "적금"],
+    ["예금", "저축", "예금"],
+    ["청약", "저축", "청약"],
+    ["비상금", "저축", "비상금"],
+    ["월급|급여", "근로소득", "월급"],
+    ["상여|보너스", "근로소득", "상여금"],
+    ["성과급|인센티브", "근로소득", "성과급"],
+    ["배당", "금융소득", "배당금"],
+    ["이자", "금융소득", "이자"],
+    ["중고|당근|번개장터", "부수입", "중고거래"],
+    ["환급", "기타수입", "환급"],
+    ["지원금", "기타수입", "지원금"],
+    ["수수료", "기타지출", "수수료"]
+  ];
+  function matchNorm_(s) { return String(s == null ? "" : s).toLowerCase().replace(/[\s()·\-_.,/]/g, ""); }
+  // desc: 적은 내용, ledger: [{desc, cat, item, pay}], cats: [{name, group}], items: [{cat, name}]
+  // 돌려주는 값: {cat, item, pay, group, how: "same"(똑같은 내역) | "like"(비슷한 내역) | "word"(단어 사전)} 또는 null
+  function matchSuggest_(desc, ledger, cats, items) {
+    var raw = String(desc || "").trim(), q = matchNorm_(raw);
+    if (q.length < 2) return null;
+    var catOf = {};
+    cats.forEach(function (c) { if (c.name) catOf[c.name] = c.group; });
+    var pick = function (rows, how) {
+      var cnt = {}, best = null;
+      rows.forEach(function (x, i) {
+        if (!catOf[x.cat]) return;
+        var k = x.cat + "\u0001" + (x.item || "");
+        var o = cnt[k] || (cnt[k] = { n: 0, last: 0, x: x });
+        o.n++; o.last = i; o.x = x;
+      });
+      Object.keys(cnt).forEach(function (k) { var o = cnt[k]; if (!best || o.n > best.n || (o.n === best.n && o.last > best.last)) best = o; });
+      return best ? { cat: best.x.cat, item: best.x.item || "", pay: how === "same" ? (best.x.pay || "") : "", group: catOf[best.x.cat], how: how } : null;
+    };
+    var withDesc = ledger.filter(function (x) { return x.desc && x.cat; });
+    var same = withDesc.filter(function (x) { return matchNorm_(x.desc) === q; });
+    if (same.length) { var s1 = pick(same, "same"); if (s1) return s1; }
+    if (q.length >= 3) {
+      var like = withDesc.filter(function (x) { var k = matchNorm_(x.desc); return k.length >= 3 && (k.indexOf(q) >= 0 || q.indexOf(k) >= 0); });
+      if (like.length) { var s2 = pick(like, "like"); if (s2) return s2; }
+    }
+    var low = raw.toLowerCase();
+    for (var i = 0; i < MATCH_RULES.length; i++) {
+      var r = MATCH_RULES[i];
+      if (!catOf[r[1]]) continue;
+      if (!new RegExp(r[0]).test(low) && !new RegExp(r[0]).test(q)) continue;
+      var catItems = items.filter(function (it) { return it.cat === r[1]; });
+      var item = "";
+      // 적은 내용에 세부 항목 이름이 들어 있으면 그 항목 (예: 동성로 관리비, 삼삼엠투(성서))
+      catItems.forEach(function (it) { var n = matchNorm_(it.name); if (!item && n.length >= 2 && q.indexOf(n) >= 0) item = it.name; });
+      if (!item && r[2] && catItems.some(function (it) { return it.name === r[2]; })) item = r[2];
+      if (!item && r[1] === "임대수입") catItems.forEach(function (it) { if (!item && /삼삼엠투/.test(it.name) && q.indexOf(matchNorm_(it.name).replace("삼삼엠투", "")) >= 0) item = it.name; });
+      return { cat: r[1], item: item, pay: "", group: catOf[r[1]], how: "word" };
+    }
+    return null;
+  }
+  // MATCH-END
   function icon(name) {   // 대분류 이름 → 그림 키
     var c = D && D.cats ? D.cats.filter(function (x) { return x.name === name; })[0] : null;
     var k = c && c.icon;
@@ -1422,6 +1556,8 @@
     var h = (editing ? '<h2>내역 수정<span class="sub">' + esc(editing.date) + ' · 원래 줄을 고쳐요</span></h2>' : '<h2>간편 입력<span class="sub">내역입력 탭에 바로 저장돼요</span></h2>') +
       '<div class="field"><label>날짜</label><input class="input" type="date" id="fDate" value="' + esc($("fDate") ? $("fDate").value : D.today) + '"></div>' +
       '<div class="field"><label>누가</label><div class="seg" id="fWho">' + D.members.map(function (m) { return '<button type="button" data-v="' + esc(m) + '" class="' + (m === who ? "on" : "") + '">' + esc(m) + "</button>"; }).join("") + "</div></div>" +
+      '<div class="field"><label>내용</label><input class="input" id="fDesc" placeholder="' + (form.cat === "금융소득" ? "예: SCHD 배당 (티커를 넣으면 종목별로 모여요)" : form.cat === "카드대금" ? "예: 생활비 카드" : "어디에 썼나요? 예: 스타벅스, 이마트, 넷플릭스") + '" autocomplete="off">' +
+      '<div class="sug" id="fSug">' + sugHtml() + "</div></div>" +
       '<div class="field"><label>구분</label><div class="seg" id="fGroup">' + groups.map(function (g) { return '<button type="button" data-v="' + g + '" class="' + (g === form.group ? "on" : "") + '">' + g + "</button>"; }).join("") + "</div></div>" +
       '<div class="field"><label>대분류</label><div class="catgrid" id="fCat">' + cats.map(function (c) { return '<button type="button" data-v="' + esc(c.name) + '" class="' + (c.name === form.cat ? "on" : "") + '">' + ci(c.name, 22) + "<span>" + esc(c.name) + "</span></button>"; }).join("") + "</div>" +
       (form.group === "이체" ? '<div class="hint">카드값이 통장에서 빠져나갔다면 "카드대금", 내용에 카드 이름을 적어 주세요. 지출로 두 번 잡히지 않아요.</div>' : "") + "</div>" +
@@ -1429,7 +1565,6 @@
       '<div class="field"><label>금액</label><div class="amount-wrap"><input class="input num" id="fAmt" inputmode="decimal" placeholder="0" autocomplete="off">' +
       '<div class="seg cur" id="fCur"><button type="button" data-v="KRW" class="' + (form.currency === "KRW" ? "on" : "") + '">원</button><button type="button" data-v="USD" class="' + (form.currency === "USD" ? "on" : "") + '">$</button></div></div>' +
       '<div class="hint" id="fAmtHint"></div></div>' +
-      '<div class="field"><label>내용</label><input class="input" id="fDesc" placeholder="' + (form.cat === "금융소득" ? "예: SCHD 배당 (티커를 넣으면 종목별로 모여요)" : form.cat === "카드대금" ? "예: 생활비 카드" : "예: 마트 장보기") + '" autocomplete="off"></div>' +
       '<div class="field"><label>결제수단</label><select class="input" id="fPay">' + pays.map(function (p) { return '<option' + (p === payDefault ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") + "</select></div>" +
       // 받는 통장: 이체·저축/투자일 때만 (통장끼리 옮기거나 적금에 넣는 돈 → 그 통장 잔액에 더해짐)
       (form.group === "이체" || form.group === "저축/투자" ? '<div class="field"><label>받는 통장 (선택)</label><select class="input" id="fRecv"><option value="">없음</option>' +
@@ -1443,6 +1578,34 @@
     amtHint();
   }
 
+  // ---------- 내용 → 대분류·항목 추천 ----------
+  var sug = null;   // {cat, item, pay, group, how, applied}
+  function sugHtml() {
+    if (!sug) return "";
+    var label = "<b>" + esc(sug.cat) + "</b>" + (sug.item ? " · " + esc(sug.item) : "");
+    if (sug.applied) return '<div class="sug-on">✓ ' + (sug.how === "same" ? "예전과 같이 골랐어요: " : "추천대로 골랐어요: ") + label + "</div>";
+    if (form.cat === sug.cat && (form.item || "") === (sug.item || "")) return "";
+    return '<button type="button" class="sug-chip" id="fSugBtn">' + ci(sug.cat, 16) + "<span>" + label + "</span><em>" + (sug.how === "word" ? "추천" : "예전 기록") + "</em></button>";
+  }
+  function renderSug() { if ($("fSug")) $("fSug").innerHTML = sugHtml(); }
+  function sugCompute() {
+    var el = $("fDesc"); if (!el) return;
+    var s2 = matchSuggest_(el.value, D.ledger, D.cats, D.items);
+    if (s2 && sug && sug.applied && s2.cat === sug.cat && s2.item === sug.item) return;   // 이미 고른 것과 같음
+    sug = s2;
+    if (sug && sug.how === "same" && !form.manual && !editing) { applySug(); return; }   // 예전에 똑같이 적은 내용이면 바로 골라 줌
+    renderSug();
+  }
+  function applySug() {
+    if (!sug) return;
+    var foc = document.activeElement && document.activeElement.id === "fDesc";
+    form.group = sug.group; form.cat = sug.cat; form.item = sug.item || "";
+    sug.applied = true;
+    renderForm();
+    if (sug.pay && $("fPay") && [].some.call($("fPay").options, function (o) { return o.value === sug.pay; })) $("fPay").value = sug.pay;
+    if (foc) { var el = $("fDesc"); el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
+  }
+
   function amtHint() {
     var v = parseFloat(($("fAmt").value || "").replace(/,/g, ""));
     $("fAmtHint").textContent = !v ? (form.currency === "USD" ? "달러로 받은 금액 그대로 적으면 저장할 때 그날 환율로 원화가 계산돼요." : "") :
@@ -1451,6 +1614,7 @@
 
   function clearForm() {
     ["fAmt", "fDesc", "fMemo"].forEach(function (id) { if ($(id)) $(id).value = ""; });
+    sug = null; form.manual = false;
     if ($("fDate")) $("fDate").value = D.today;
     form.item = "";
   }
@@ -1460,7 +1624,7 @@
     var cur = document.querySelector(".view.on"), back = cur ? cur.id.replace("view-", "") : "list";
     var grp = D.cats.filter(function (c) { return c.name === x.cat; })[0];
     form.group = grp ? grp.group : (x.type || "지출");
-    form.cat = x.cat; form.item = x.item; form.currency = x.usd ? "USD" : "KRW";
+    form.cat = x.cat; form.item = x.item; form.currency = x.usd ? "USD" : "KRW"; form.manual = true; sug = null;
     editing = { row: x.row, date: x.date, desc: x.desc, who: x.who, pay: x.pay, recv: x.recv, back: back };
     showView("add");
     renderForm();
@@ -1491,7 +1655,7 @@
     if (t.who) { store("who", t.who); store("pay_" + t.who, t.pay); }
     $("fSave").disabled = true; $("fSave").textContent = "저장 중…";
     call("addTransaction", [t], function (d) {
-      D = d; $("fAmt").value = ""; $("fDesc").value = ""; $("fMemo").value = ""; form.item = "";
+      D = d; $("fAmt").value = ""; $("fDesc").value = ""; $("fMemo").value = ""; form.item = ""; sug = null; form.manual = false;
       render(); toast("저장했어요 · " + t.cat + " " + (t.currency === "USD" ? "$" + amt : won(amt)));
     });
   }
@@ -1533,15 +1697,17 @@
     var p = b.parentElement && b.parentElement.id;
     if (p === "fWho") { b.parentElement.querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); });
       var pd = store("pay_" + b.dataset.v); if (pd) $("fPay").value = pd; return; }
-    if (p === "fGroup") { form.group = b.dataset.v; form.cat = ""; renderForm(); return; }
-    if (p === "fCat") { form.cat = b.dataset.v; form.item = ""; if (form.cat === "배당금") {} renderForm(); return; }
-    if (p === "fItem") { form.item = form.item === b.dataset.v ? "" : b.dataset.v; renderForm(); return; }
+    if (b.id === "fSugBtn") { applySug(); return; }
+    if (p === "fGroup") { form.manual = true; if (sug) sug.applied = false; form.group = b.dataset.v; form.cat = ""; renderForm(); return; }
+    if (p === "fCat") { form.manual = true; if (sug) sug.applied = false; form.cat = b.dataset.v; form.item = ""; if (form.cat === "배당금") {} renderForm(); return; }
+    if (p === "fItem") { form.manual = true; if (sug) sug.applied = false; form.item = form.item === b.dataset.v ? "" : b.dataset.v; renderForm(); return; }
     if (p === "fCur") { form.currency = b.dataset.v; renderForm(); return; }
     if (b.id === "fSave") { save(); return; }
   });
-  var qT;
+  var qT, sugT;
   document.addEventListener("input", function (e) {
     if (e.target.id === "fAmt") amtHint();
+    if (e.target.id === "fDesc") { clearTimeout(sugT); sugT = setTimeout(sugCompute, 220); }
     if (e.target.closest && e.target.closest(".rv-memo")) growArea(e.target);
     if (e.target.id === "listQ") { clearTimeout(qT); qT = setTimeout(function () { listQ = e.target.value; renderListBody(); }, 150); }
   });
