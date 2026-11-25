@@ -496,6 +496,9 @@
   .chat-msg.me .bub { background: #fee500; border-radius: 16px 4px 16px 16px; }
   .chat-msg.me:not(.first) .bub { border-radius: 16px; }
   .chat-line .bub a { color: #1b64da; }
+  .chat-name .bot-av { width: 20px; height: 20px; border-radius: 6px; }
+  .chat-msg.bot .bub { max-width: 84%; border-left: 3px solid #f5b80b; font-size: 14px; line-height: 1.55; }
+  .chat-msg.bot .bub b { display: inline-block; font-size: 15px; margin-bottom: 2px; }
   .chat-line .tm { font-size: 10.5px; color: #556677; white-space: nowrap; flex: 0 0 auto; }
   .chat-empty { text-align: center; color: #4e5968; font-size: 13.5px; line-height: 1.6; margin-top: 30vh; }
   .chat-pick { background: #fff; border-radius: 18px; padding: 22px 18px; margin: 18vh auto 0; max-width: 320px; text-align: center; }
@@ -2448,6 +2451,8 @@
   // 메시지는 시트 '대화' 탭(B 시각, C 보낸 사람, D 내용)에 쌓여요.
   // 대화창이 열려 있으면 5초마다, 닫혀 있으면 1분마다 새 메시지를 확인해요 (앱이 화면에 보일 때만).
   var CHAT = { open: false, timer: null, busy: false, sig: "" };
+  var CHAT_BOT = "불림봇";   // 자동기록 스크립트가 매일 아침 9시 15분쯤 올리는 정리 (대화 탭 C열 = 불림봇)
+  function chatBotIcon() { var l = document.querySelector(".brand .logo"); return l ? l.src : ""; }
   function chatOn() { return typeof apiChatGet === "function" || !!window.__MOCK__; }
   function chatMe() { var m = store("chat_me"); return m && D.members.indexOf(m) >= 0 ? m : ""; }
   function chatPeople() { return D.members.filter(function (n) { return n !== "공동"; }); }
@@ -2511,12 +2516,14 @@
       var next = a[i + 1], nt = next ? chatTime(next.ts) : null;
       var first = !prev || prev.who !== m.who;
       var showTime = !next || next.who !== m.who || nt.t !== tm.t || nt.d !== tm.d;   // 같은 분에 이어 보낸 건 마지막에만 시각
-      h += '<div class="chat-msg' + (mine ? " me" : "") + (first ? " first" : "") + '">' +
-        (!mine && first ? '<div class="chat-name"><i style="background:' + (whoColor(m.who) || "#8b95a1") + '"></i>' + esc(m.who || "?") + "</div>" : "") +
-        '<div class="chat-line"><div class="bub">' + chatLink(m.text) + "</div>" + (showTime ? '<span class="tm">' + tm.t + "</span>" : "") + "</div></div>";
+      var bot = m.who === CHAT_BOT;
+      var txt = bot ? chatLink(m.text).replace(/^([^<]*)(<br>|$)/, "<b>$1</b>$2") : chatLink(m.text);   // 봇은 첫 줄(제목) 굵게
+      h += '<div class="chat-msg' + (mine ? " me" : "") + (bot ? " bot" : "") + (first ? " first" : "") + '">' +
+        (!mine && first ? '<div class="chat-name">' + (bot ? '<img class="bot-av" src="' + chatBotIcon() + '" alt="">' : '<i style="background:' + (whoColor(m.who) || "#8b95a1") + '"></i>') + esc(m.who || "?") + "</div>" : "") +
+        '<div class="chat-line"><div class="bub">' + txt + "</div>" + (showTime ? '<span class="tm">' + tm.t + "</span>" : "") + "</div></div>";
       prev = m;
     });
-    body.innerHTML = h || '<div class="chat-empty">아직 대화가 없어요.<br>장 볼 거, 이번 달 지출 얘기, 뭐든 남겨 보세요.</div>';
+    body.innerHTML = h || '<div class="chat-empty">아직 대화가 없어요.<br>장 볼 거, 이번 달 지출 얘기, 뭐든 남겨 보세요.<br>매일 아침엔 불림봇이 돈 정리를 올려 줘요.</div>';
     if (!keepScroll || atBottom) body.scrollTop = body.scrollHeight;
   }
   function chatMarkSeen() {
