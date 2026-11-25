@@ -915,13 +915,13 @@
         return shape_(V);
       });
   }
-  // 고정항목: 수입 B항목명 C금액 D입금일 E입금통장 / 지출 I항목명 J대분류 K항목 L금액 M납부일 N결제수단 O받는통장
+  // 고정항목: 수입 B항목명 C주체 D금액 E입금일 F입금통장 / 지출 J항목명 K주체 L대분류 M항목 N금액 O납부일 P결제수단 Q받는통장
   function fixed_(V) {
     var day = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ""), 10); return isFinite(n) ? n : 0; };
     var a = (V.W_FIXED_IN || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 4); return { kind: "in", name: s_(r[0]), amount: n_(r[1]), day: day(r[2]), pay: s_(r[3]) }; });
+      .map(function (r) { r = pad_(r, 5); return { kind: "in", name: s_(r[0]), who: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]) }; });
     var b = (V.W_FIXED_OUT || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 7); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), item: s_(r[2]), amount: n_(r[3]), day: day(r[4]), pay: s_(r[5]), recv: s_(r[6]) }; });
+      .map(function (r) { r = pad_(r, 8); return { kind: "out", name: s_(r[0]), who: s_(r[1]), cat: s_(r[2]), item: s_(r[3]), amount: n_(r[4]), day: day(r[5]), pay: s_(r[6]), recv: s_(r[7]) }; });
     return a.concat(b);
   }
   // 지수데이터 탭: A날짜 B코스피 C S&P D나스닥 E비트코인 F금(GLD) G달러 H서울아파트 I~P 보유종목 8개 (주간 종가)
