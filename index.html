@@ -1775,7 +1775,8 @@
   // AI-START ---------- AI (구글 Gemini 무료 등급) ----------
   // 키는 시트 '설정' J10(이름표 W_AI_KEY)에 있고, 시트를 공유받은 계정으로 로그인해야만 읽혀요 (앱 주소에는 키가 없음).
   // 보내는 것: 입력 문장/사진, 또는 가계부 요약(합계·분류·최근 내역). 계좌번호처럼 보이는 숫자는 빼고 보내요.
-  var AI_MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"];
+  // 앞에서부터 써 보고, 없거나(404) 붐비거나(503) 그 모델 무료 사용량이 끝나면(429) 다음 모델로 넘어가요.
+  var AI_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-3.5-flash-lite"];
   var aiModelOk = store("ai_model") || "";
   var aiAddS = { open: false, text: "", img: null, list: null, busy: false, msg: "" };   // AI로 입력 상태 (처음엔 한 줄로 접힘)
   var aiChat = [], aiBusy = false;                                           // AI에게 묻기 대화
@@ -1787,15 +1788,18 @@
       generationConfig: { temperature: opt.temp == null ? 0.2 : opt.temp } };
     if (opt.json) body.generationConfig.responseMimeType = "application/json";
     if (opt.system) body.systemInstruction = { parts: [{ text: opt.system }] };
+    var lastErr = "";
     function tryModel(i) {
-      if (i >= models.length) return Promise.reject(new Error("쓸 수 있는 AI 모델을 찾지 못했어요."));
+      if (i >= models.length) return Promise.reject(new Error(
+        lastErr === 429 ? "오늘 무료 사용량을 다 썼어요. 잠시 뒤나 내일 다시 해 주세요." :
+        lastErr === 503 ? "지금 AI를 쓰는 사람이 많아요. 잠시 뒤 다시 해 주세요." : "쓸 수 있는 AI 모델을 찾지 못했어요."));
       return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent", {
         method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": D.aiKey }, body: JSON.stringify(body)
       }).then(function (r) {
         return r.json().catch(function () { return {}; }).then(function (j) {
           var em = (j.error && j.error.message) || "";
-          if (r.status === 404 || (r.status === 400 && /not found|not supported|is not available/i.test(em))) return tryModel(i + 1);
-          if (r.status === 429) throw new Error("오늘 무료 사용량을 다 썼어요. 잠시 뒤나 내일 다시 해 주세요.");
+          if (r.status === 404 || (r.status === 400 && /not found|not supported|is not available|no longer available/i.test(em))) return tryModel(i + 1);
+          if (r.status === 429 || r.status === 503 || r.status === 500) { lastErr = r.status === 500 ? 503 : r.status; return tryModel(i + 1); }
           if ((r.status === 400 || r.status === 403) && /api key|API_KEY|permission/i.test(em)) throw new Error("AI 키가 맞지 않아요. 설정 탭 J10 칸의 키를 확인해 주세요.");
           if (!r.ok) throw new Error("AI 오류 (" + r.status + ") " + em.slice(0, 80));
           aiModelOk = models[i]; store("ai_model", models[i]);
