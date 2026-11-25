@@ -6,14 +6,14 @@
 <title>불림</title>
 <meta name="apple-mobile-web-app-title" content="불림">
 <meta name="application-name" content="불림">
-<meta name="theme-color" content="#3B4256">
+<meta name="theme-color" content="#1f2b4d">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-512.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <style>
   :root {
     --navy: #3B4256; --ink: #1F2430; --muted: #8A90A2; --line: #E6E8EE; --soft: #F4F5F8; --page: #EEF0F4;
@@ -147,7 +147,7 @@
   #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--page); z-index: 40; color: var(--muted); font-weight: 700; }
   #loading.hide { display: none; }
   #signin { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 24px;
-    background: linear-gradient(160deg, #3B4256, #2B3042); color: #fff; text-align: center; }
+    background: linear-gradient(160deg, #1f2b4d, #18223d); color: #fff; text-align: center; }
   #signin.show { display: grid; }
   .si-box { width: 100%; max-width: 360px; }
   .si-box img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
@@ -313,6 +313,51 @@
     #homeGrid { grid-template-columns: repeat(4, minmax(0, 1fr));
       grid-template-areas: "hero hero hero hero" "month month card trend" "budget budget div goal"; }
   }
+  /* ===== 디자인 A: 네이비 & 탠저린 (2026-11 개편) ===== */
+  :root { --navy:#1f2b4d; --ink:#1f2b4d; --muted:#7b8299; --line:#ebebe7; --soft:#f6f6f3; --page:#f4f4f2; --card:#ffffff;
+    --accent:#f7941d; --accent-ink:#1f2b4d; --accent-shadow:rgba(247,148,29,.35); --bar:#1f2b4d; --blue:#2f6fd6; --mint:#ffb35c; }
+  html, body { font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; letter-spacing: -0.01em; }
+  .top { background:#1f2b4d; }
+  .card { border-radius: 18px; border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.04); }
+  .card h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .card h2::before { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .hero { background: radial-gradient(120% 140% at 100% 0%, #2c3b66 0%, #1f2b4d 55%, #18223d 100%); border-color: #1f2b4d; }
+  .hero-side > div { background: rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.08); }
+  .tile { border-radius: 12px; border-top-width: 2px; }
+  .tile .v, .hero .big, .hero-side .v { font-weight: 700; letter-spacing: -0.02em; }
+  .meter, .split { border-radius: 999px; }
+  .meter > i { border-radius: 999px; background: var(--bar); }
+  .badge { font-weight: 600; }
+  button { transition: transform .12s ease, background-color .15s ease, box-shadow .15s ease; }
+  button:active { transform: scale(.97); }
+  .cal-cell { transition: transform .15s ease, box-shadow .15s ease; }
+  .cal-cell:not(.out):hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(16,24,40,.08); }
+  .save { border-radius: 14px; background: var(--accent); }
+  .tabs { background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .tabs button.add-btn span.dot { background: var(--accent); box-shadow: 0 6px 16px var(--accent-shadow); }
+  .tabs button.add-btn.on span.dot { background: var(--navy); }
+  .tabs button.on { color: var(--accent-ink); }
+
+  /* 수익률 비교 차트 */
+  .cmp-row { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  .cmp-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .pill { display: inline-flex; background: var(--soft); border-radius: 999px; padding: 3px; gap: 2px; }
+  .pill button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .pill button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+  .cmp-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 2px 0 8px; }
+  .cmp-legend button { border: 0; background: none; padding: 2px 0; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); }
+  .cmp-legend button i { width: 18px; height: 0; border-top: 3px solid; border-radius: 2px; }
+  .cmp-legend button i.dash { border-top-style: dashed; }
+  .cmp-legend button.off { opacity: .35; }
+  .cmp-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .cmp-cards div { background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; min-width: 0; }
+  .cmp-cards span { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cmp-cards b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }
+  .cmp-note { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  @media (min-width: 1000px) {
+    .cmp-row { grid-template-columns: 1fr 1fr; }
+    .cmp-cards b { font-size: 19px; }
+  }
 </style>
 </head>
 <body>
@@ -461,7 +506,7 @@
   var NAMES = ["W_LEDGER", "W_CATS", "W_ITEMS", "W_MEMBERS", "W_PAYS", "W_OTHER", "W_HOLDINGS", "W_CARDS",
     "W_DIV_KPI", "W_DIV_MONTH", "W_DIV_BY", "W_NW_HIST", "W_GOALS", "W_PENSION", "NET_WORTH", "W_TOTAL_ASSET",
     "W_DEBT", "W_FX", "W_CASH", "W_US_VALUE", "W_KR_VALUE", "W_US_USD_RET", "INVEST_COST", "INVEST_VALUE",
-    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS"];
+    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD"];
   function apiGetData() {
     var q = NAMES.map(function (x) { return "ranges=" + enc(x); }).join("&");
     return gapi("GET", "/values:batchGet?" + q + "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER")
@@ -480,6 +525,16 @@
       .map(function (r) { r = pad_(r, 5); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]) }; });
     return a.concat(b);
   }
+  // 지수데이터 탭: A날짜 B코스피 C S&P D나스닥 E비트코인 F금(GLD) G달러 H서울아파트 I~P 보유종목 8개 (주간 종가)
+  function bench_(V) {
+    var nv = function (v) { return typeof v === "number" && isFinite(v) ? v : null; };
+    var rows = (V.W_BENCH || []).filter(function (r) { return typeof r[0] === "number"; });
+    var col = function (i) { return rows.map(function (r) { return nv(r[i]); }); };
+    var meta = (V.W_BENCH_META || []).filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) { r = pad_(r, 4); return { ticker: s_(r[0]), value: n_(r[1]), ccy: s_(r[2]), w: n_(r[3]) }; });
+    return { dates: rows.map(function (r) { return d_(r[0]); }), kospi: col(1), sp: col(2), nasdaq: col(3), btc: col(4), gold: col(5), fx: col(6), apt: col(7),
+      slots: meta.map(function (m, i) { return col(8 + i); }), meta: meta };
+  }
+  function one_raw_(V, k) { return V[k] && V[k][0] ? V[k][0][0] : ""; }
   function one_(V, k) { return n_(V[k][0] && V[k][0][0]); }
   function shape_(V) {
     var ledger = V.W_LEDGER.map(function (r, i) {
@@ -506,6 +561,10 @@
         byHolding: V.W_DIV_BY.filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) { return { name: s_(r[0]), months: pad_(r.slice(1, 13), 12).map(n_) }; })
       },
       fixed: fixed_(V),
+      bench: bench_(V),
+      // 수익률비교 탭의 시작일 입력 칸 (비우면 "")
+      cmpStart: { long: typeof one_raw_(V, "W_CMP_START_LONG") === "number" ? d_(one_raw_(V, "W_CMP_START_LONG")) : "",
+                  ytd: typeof one_raw_(V, "W_CMP_START_YTD") === "number" ? d_(one_raw_(V, "W_CMP_START_YTD")) : "" },
       // 자산관리 통장 표: B계좌명 C종류 D명의 E현재 잔액(자동) F확인한 잔액 G확인일
       accounts: (V.W_ACCOUNTS || []).filter(function (r) { return s_(r[0]) !== ""; }).map(function (r) {
         r = pad_(r, 6);
@@ -721,6 +780,143 @@
     return '<div class="tile" style="border-top-color:' + color + '"><div class="t"><span>' + esc(t) + "</span>" + (extra || "") + '</div><div class="v num">' + v + "</div></div>";
   }
 
+  // 점들을 부드러운 곡선으로 (Catmull-Rom → 베지어)
+  function smoothPath(p) {
+    if (!p.length) return "";
+    var d = "M" + p[0][0].toFixed(1) + " " + p[0][1].toFixed(1);
+    for (var i = 0; i < p.length - 1; i++) {
+      var a = p[i - 1] || p[i], b = p[i], c = p[i + 1], e = p[i + 2] || c;
+      d += " C" + (b[0] + (c[0] - a[0]) / 6).toFixed(1) + " " + (b[1] + (c[1] - a[1]) / 6).toFixed(1) + " " +
+        (c[0] - (e[0] - b[0]) / 6).toFixed(1) + " " + (c[1] - (e[1] - b[1]) / 6).toFixed(1) + " " + c[0].toFixed(1) + " " + c[1].toFixed(1);
+    }
+    return d;
+  }
+
+  // ---------- 수익률 비교 (지수데이터 탭: 주간 종가) ----------
+  var CMP = [
+    { k: "mine", n: "내 투자", c: "#1baf7a", solid: true },
+    { k: "kospi", n: "KOSPI", c: "#2f6fd6" },
+    { k: "nasdaq", n: "NASDAQ", c: "#98a1b3", usd: true },
+    { k: "btc", n: "BTC", c: "#eb6834", usd: true },
+    { k: "sp", n: "S&P500", c: "#e34948", usd: true },
+    { k: "gold", n: "금", c: "#e3a514", usd: true },
+    { k: "usd", n: "달러", c: "#2f9e8f" }
+  ];
+  var cmpState = { long: { mode: "base", range: "all", off: {} }, ytd: { mode: "base", off: {} } };
+  function cmpDef(k) { return CMP.filter(function (d) { return d.k === k; })[0]; }
+  // 내 투자: 지금 보유 종목·비중으로 매주 수익률을 이어 붙인 지수 (상장 전 종목은 빼고 나머지로 다시 비중)
+  function portIndex(B, mode) {
+    var idx = [1];
+    for (var t = 1; t < B.dates.length; t++) {
+      var num = 0, ws = 0;
+      B.meta.forEach(function (m, i) {
+        var s = B.slots[i] || [], p0 = s[t - 1], p1 = s[t];
+        if (!(p0 > 0 && p1 > 0) || !m.w) return;
+        var r = p1 / p0;
+        if (mode === "krw" && m.ccy === "USD" && B.fx[t - 1] > 0 && B.fx[t] > 0) r *= B.fx[t] / B.fx[t - 1];
+        num += m.w * (r - 1); ws += m.w;
+      });
+      idx.push(idx[t - 1] * (1 + (ws ? num / ws : 0)));
+    }
+    return idx;
+  }
+  function cmpSeries(B, k, mode) {
+    if (k === "mine") return portIndex(B, mode);
+    if (k === "usd") return B.fx;
+    var a = B[k] || [], d = cmpDef(k);
+    if (mode === "krw" && d.usd) return a.map(function (v, t) { return v > 0 && B.fx[t] > 0 ? v * B.fx[t] : null; });
+    return a;
+  }
+  // s~끝 구간을 시작값 대비 수익률로
+  function cmpNorm(a, s) {
+    var base = null, out = [];
+    for (var t = s; t < a.length; t++) { if (base === null && a[t] > 0) base = a[t]; out.push(base && a[t] > 0 ? a[t] / base - 1 : null); }
+    return out;
+  }
+  function pctTxt(v) { return (v > 0 ? "+" : "") + (v * 100).toFixed(1) + "%"; }
+  function cmpSvg(lines, labels, W, H) {
+    var L = 46, R = 10, T = 10, B = 26, all = [];
+    lines.forEach(function (l) { l.v.forEach(function (v) { if (v !== null) all.push(v); }); });
+    if (!all.length) return '<div class="empty">아직 데이터가 없어요.</div>';
+    var mn = Math.min(0, Math.min.apply(null, all)), mx = Math.max(0, Math.max.apply(null, all)), span = (mx - mn) || 0.1;
+    var steps = [0.05, 0.1, 0.25, 0.5, 1, 2, 5], st = steps.filter(function (x) { return span / x <= 5; })[0] || 10;
+    var lo = Math.floor(mn / st) * st, hi = Math.ceil(mx / st) * st, n = lines[0].v.length;
+    function x(i) { return L + (W - L - R) * (n > 1 ? i / (n - 1) : 0.5); }
+    function y(v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo || 1)); }
+    var s = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '">';
+    for (var g = lo; g <= hi + 1e-9; g += st) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(g).toFixed(1) + '" y2="' + y(g).toFixed(1) + '" stroke="' + (Math.abs(g) < 1e-9 ? "#C9CDD6" : "#E6E8EE") + '" stroke-dasharray="' + (Math.abs(g) < 1e-9 ? "0" : "3 4") + '"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(g) + 3).toFixed(1) + '" text-anchor="end" font-size="10" fill="#7b8299">' + Math.round(g * 100) + "%</text>";
+    }
+    labels.forEach(function (lb) { s += '<text x="' + x(lb.i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#7b8299">' + lb.t + "</text>"; });
+    // 점선 비교선 먼저, 내 투자(실선)는 맨 위에
+    lines.slice().sort(function (a, b) { return (a.solid ? 1 : 0) - (b.solid ? 1 : 0); }).forEach(function (l) {
+      var seg = [], segs = [];
+      l.v.forEach(function (v, i) { if (v === null) { if (seg.length) segs.push(seg); seg = []; } else seg.push([x(i), y(v)]); });
+      if (seg.length) segs.push(seg);
+      segs.forEach(function (sg) {
+        s += '<path d="' + smoothPath(sg) + '" fill="none" stroke="' + l.c + '" stroke-width="' + (l.solid ? 3 : 2) + '" stroke-linecap="round"' + (l.solid ? "" : ' stroke-dasharray="6 5"') + "/>";
+      });
+    });
+    return s + "</svg>";
+  }
+  function cmpCard(id) {
+    var B = D.bench;
+    if (!B || !B.dates || B.dates.length < 3) return '<div class="card"><h2>수익률 비교</h2><div class="empty">지수 데이터를 불러오는 중이에요. 시트를 한 번 열면 채워져요.</div></div>';
+    var st = cmpState[id], ytd = id === "ytd", n = B.dates.length, start = 0, keys, title;
+    var cs0 = D.cmpStart || {};   // 시트 '수익률비교' 탭에서 직접 적은 시작일
+    if (ytd) {
+      var y0 = cs0.ytd || D.today.slice(0, 4) + "-01-01";
+      for (var t = 0; t < n; t++) if (cs0.ytd ? B.dates[t] <= y0 : B.dates[t] < y0) start = t;
+      keys = ["mine", "kospi", "nasdaq", "btc", "sp", "gold", "usd"];
+      title = cs0.ytd ? "주요지수 수익률 비교" : D.today.slice(0, 4) + "년 주요지수 수익률 비교";
+    } else {
+      var yrs = { "1y": 1, "3y": 3 }[st.range];
+      var cut = yrs ? (+D.today.slice(0, 4) - yrs) + D.today.slice(4) : cs0.long;
+      if (cut) for (var u = 0; u < n; u++) if (B.dates[u] <= cut) start = u;
+      keys = ["mine", "kospi", "sp", "nasdaq"];
+      title = "내 포트폴리오 vs 지수 수익률";
+    }
+    var lines = keys.map(function (k) {
+      var d = cmpDef(k);
+      return { k: k, n: k === "mine" && !ytd ? "내 포트폴리오" : d.n, c: d.c, solid: !!d.solid, v: cmpNorm(cmpSeries(B, k, st.mode), start) };
+    });
+    // x축: 연도(긴 차트) / 월(올해)
+    var labels = [], prev = "";
+    for (var i = 0; i < n - start; i++) {
+      var dt = B.dates[start + i], key = ytd ? dt.slice(5, 7) : dt.slice(0, 4);
+      if (i === 0) { labels.push({ i: 0, t: ytd ? "시작" : "'" + dt.slice(2, 4) }); prev = key; continue; }
+      if (key !== prev) { if (i > (ytd ? 2 : 6)) labels.push({ i: i, t: ytd ? (+key) + "월" : "'" + key.slice(2) }); prev = key; }
+    }
+    if (!ytd && labels.length > 7) labels = labels.filter(function (l, j) { return j % 2 === 0; });
+    var mainW = (document.querySelector("main") || document.body).clientWidth;
+    var W = Math.max(320, Math.min(1180, isPC() ? mainW / 2 - 80 : mainW - 70)), H = isPC() ? 300 : 230;
+    var total = n - start, stepN = Math.max(1, Math.ceil(total / 120));
+    if (stepN > 1) {
+      var keep = function (arr) { return arr.filter(function (v, j) { return j % stepN === 0 || j === arr.length - 1; }); };
+      lines.forEach(function (l) { l.vFull = l.v; l.v = keep(l.v); });
+      var map = []; for (var q = 0; q < total; q++) if (q % stepN === 0 || q === total - 1) map.push(q);
+      labels = labels.map(function (lb) { var j = 0; while (j < map.length - 1 && map[j] < lb.i) j++; return { i: j, t: lb.t }; });
+    }
+    var shown = lines.filter(function (l) { return !st.off[l.k]; });
+    var legend = '<div class="cmp-legend">' + lines.map(function (l) {
+      return '<button data-cmp="' + id + '" data-cmp-key="' + l.k + '" class="' + (st.off[l.k] ? "off" : "") + '"><i class="' + (l.solid ? "" : "dash") + '" style="border-color:' + l.c + '"></i>' + esc(l.n) + "</button>";
+    }).join("") + "</div>";
+    var tools = '<div class="cmp-tools"><div class="pill">' +
+      [["base", "기본"], ["krw", "환율"]].map(function (m) { return '<button data-cmp="' + id + '" data-cmp-mode="' + m[0] + '" class="' + (st.mode === m[0] ? "on" : "") + '">' + m[1] + "</button>"; }).join("") + "</div>" +
+      (ytd ? "" : '<div class="pill">' + [["1y", "1년"], ["3y", "3년"], ["all", "시작일부터"]].map(function (r) { return '<button data-cmp="' + id + '" data-cmp-range="' + r[0] + '" class="' + (st.range === r[0] ? "on" : "") + '">' + r[1] + "</button>"; }).join("") + "</div>") + "</div>";
+    var last = function (l) { var a = l.vFull || l.v; for (var j = a.length - 1; j >= 0; j--) if (a[j] !== null) return a[j]; return null; };
+    var cards = '<div class="cmp-cards">' + lines.map(function (l) {
+      var v = last(l);
+      return "<div><span>" + esc(l.n) + '</span><b class="num" style="color:' + (v === null ? "var(--muted)" : l.c) + '">' + (v === null ? "-" : pctTxt(v)) + "</b></div>";
+    }).join("") + "</div>";
+    var from = B.dates[start], to = B.dates[n - 1];
+    return '<div class="card"><h2>' + esc(title) + '<span class="sub">' + from.slice(2).replace(/-/g, ".") + " ~ " + to.slice(2).replace(/-/g, ".") + "</span></h2>" + tools + legend +
+      cmpSvg(shown.length ? shown : lines.slice(0, 1), labels, W, H) + cards +
+      '<div class="cmp-note">내 투자 = 지금 보유 종목·비중을 그 기간 동안 들고 있었다고 계산한 수익률 (주간 종가). ' + (st.mode === "krw" ? "환율: 달러 자산을 원화로 바꿔 환율 변화까지 반영." : "기본: 각 지수 자기 통화 기준.") +
+      (ytd ? " 금은 GLD ETF." : "") + "</div></div>";
+  }
+
   function lineChart(pts, W, H) {
     if (!pts.length) return '<div class="empty">아직 기록이 없어요.</div>';
     W = W || 340; H = H || 150; var L = 44, R = 12, T = 12, B = 24;
@@ -730,12 +926,13 @@
     function y(v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo || 1)); }
     var s = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '">';
     for (var g = 0; g <= 3; g++) { var gv = lo + (hi - lo) * g / 3, gy = y(gv);
-      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE"/><text x="' + (L - 6) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + eok(gv) + "</text>"; }
-    var path = pts.map(function (p, i) { return (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.value).toFixed(1); }).join(" ");
-    if (pts.length > 1) s += '<path d="' + path + " L" + x(pts.length - 1) + " " + (H - B) + " L" + x(0) + " " + (H - B) + ' Z" fill="rgba(42,120,214,.08)"/><path d="' + path + '" fill="none" stroke="#3B4256" stroke-width="2"/>';
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE" stroke-dasharray="3 4"/><text x="' + (L - 6) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + eok(gv) + "</text>"; }
+    var path = smoothPath(pts.map(function (p, i) { return [x(i), y(p.value)]; }));
+    if (pts.length > 1) s += '<defs><linearGradient id="nwfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f2b4d" stop-opacity=".16"/><stop offset="1" stop-color="#1f2b4d" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + path + " L" + x(pts.length - 1) + " " + (H - B) + " L" + x(0) + " " + (H - B) + ' Z" fill="url(#nwfill)"/><path d="' + path + '" fill="none" stroke="#1f2b4d" stroke-width="2.5" stroke-linecap="round"/>';
     pts.forEach(function (p, i) {
       var last = i === pts.length - 1;
-      s += '<circle cx="' + x(i) + '" cy="' + y(p.value) + '" r="' + (last ? 4.5 : 3) + '" fill="' + (last ? "#2a78d6" : "#3B4256") + '" stroke="#fff" stroke-width="1.5"/>';
+      if (pts.length <= 14 || last) s += '<circle cx="' + x(i) + '" cy="' + y(p.value) + '" r="' + (last ? 4.5 : 3) + '" fill="' + (last ? "#f7941d" : "#1f2b4d") + '" stroke="#fff" stroke-width="1.5"/>';
       if (pts.length <= 8 || i % Math.ceil(pts.length / 6) === 0 || last) s += '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="#8A90A2">' + p.month.slice(2).replace("-", ".") + "</text>";
     });
     var lp = pts[pts.length - 1];
@@ -748,7 +945,7 @@
     var H = W > 600 ? 220 : 160, L = 40, R = 8, T = 10, B = 22, mx = Math.max.apply(null, exp.concat(act).concat([1]));
     var bw = (W - L - R) / 12, s = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '">';
     for (var g = 0; g <= 2; g++) { var gv = mx * g / 2, gy = T + (H - T - B) * (1 - g / 2);
-      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE"/><text x="' + (L - 5) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + (gv >= 1e4 ? Math.round(gv / 1e4) + "만" : Math.round(gv)) + "</text>"; }
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE" stroke-dasharray="3 4"/><text x="' + (L - 5) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + (gv >= 1e4 ? Math.round(gv / 1e4) + "만" : Math.round(gv)) + "</text>"; }
     for (var i = 0; i < 12; i++) {
       var x0 = L + bw * i, h1 = (H - T - B) * exp[i] / mx, h2 = (H - T - B) * act[i] / mx, w = bw * 0.34;
       if (i + 1 === curMonth) s += '<rect x="' + (x0 + 1) + '" y="' + T + '" width="' + (bw - 2) + '" height="' + (H - T - B) + '" fill="#F4F5F8" rx="4"/>';
@@ -765,6 +962,9 @@
       '<div class="tiles four">' + tile("투자 원금", won(iv.cost), "var(--gray)") + tile("평가금액", won(iv.value), "var(--blue)") +
       tile("평가 손익", '<span class="' + cls(iv.pl) + '">' + signWon(iv.pl) + "</span>", "var(--navy)") +
       tile("수익률 (원화)", '<span class="' + cls(iv.ret) + '">' + pct(iv.ret) + "</span>", "var(--navy)") + "</div></div>";
+
+    h += '<div class="wide cmp-row"><div id="cmpLong">' + cmpCard("long") + '</div><div id="cmpYtd">' + cmpCard("ytd") + "</div></div>";
+    setTimeout(function () { fitNums(".cmp-cards b"); }, 0);
 
     var otherA = a.other.filter(function (o) { return o.kind === "자산"; }).reduce(function (s, o) { return s + o.amount; }, 0);
     var parts = [["현금·예금", a.cash], ["미국 ETF", a.usValue], ["국내 ETF", a.krValue], ["기타 자산", otherA]];
@@ -854,7 +1054,7 @@
     var bw = (W - L - R) / 12, ph = H - T - B, s = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '">';
     for (var g = 0; g <= 2; g++) {
       var gv = mx * g / 2, gy = T + ph * (1 - g / 2);
-      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE"/><text x="' + (L - 5) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + man(gv) + "</text>";
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '" stroke="#E6E8EE" stroke-dasharray="3 4"/><text x="' + (L - 5) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#8A90A2">' + man(gv) + "</text>";
     }
     ms.forEach(function (x, i) {
       var x0 = L + bw * i, w = bw * 0.24, cur = x.ym === ym;
@@ -903,6 +1103,7 @@
     document.querySelectorAll(".tabs button").forEach(function (x) { x.classList.toggle("on", x.dataset.view === name); });
     document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("on", v.id === "view-" + name); });
     if (name === "cal" && D) fitCalSum();
+    if (name === "invest" && D) fitNums(".cmp-cards b");
     window.scrollTo(0, 0);
   }
 
@@ -1006,6 +1207,15 @@
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.view) { if (editing) { editing = null; clearForm(); renderForm(); } showView(b.dataset.view); return; }
     if (b.dataset.day) { selDay = b.dataset.day; renderCal(); return; }
+    if (b.dataset.cmp) {   // 수익률 비교: 기본/환율, 기간, 범례 켜고 끄기
+      var cs = cmpState[b.dataset.cmp];
+      if (b.dataset.cmpMode) cs.mode = b.dataset.cmpMode;
+      if (b.dataset.cmpRange) cs.range = b.dataset.cmpRange;
+      if (b.dataset.cmpKey) cs.off[b.dataset.cmpKey] = !cs.off[b.dataset.cmpKey];
+      $(b.dataset.cmp === "long" ? "cmpLong" : "cmpYtd").innerHTML = cmpCard(b.dataset.cmp);
+      fitNums(".cmp-cards b");
+      return;
+    }
     if (b.dataset.goAdd) { $("fDate").value = b.dataset.goAdd; showView("add"); return; }
     if (b.id === "prevM" || b.id === "nextM") { ym = shiftYm(ym, b.id === "prevM" ? -1 : 1); render(); return; }
     if (b.id === "refresh") { $("loading").classList.remove("hide"); load("새로 불러왔어요"); return; }
