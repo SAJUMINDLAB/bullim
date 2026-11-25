@@ -6,7 +6,7 @@
 <title>불림</title>
 <meta name="apple-mobile-web-app-title" content="불림">
 <meta name="application-name" content="불림">
-<meta name="theme-color" content="#1f2b4d">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -170,16 +170,16 @@
   #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--page); z-index: 40; color: var(--muted); font-weight: 700; }
   #loading.hide { display: none; }
   #signin { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 24px;
-    background: linear-gradient(160deg, #1f2b4d, #18223d); color: #fff; text-align: center; }
+    background: #ffffff; color: #191f28; text-align: center; }
   #signin.show { display: grid; }
-  .si-box { width: 100%; max-width: 360px; }
-  .si-box img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-  .si-box h1 { margin: 14px 0 2px; font-size: 30px; }
-  .si-sub { color: #C9CEDA; margin: 0 0 26px; font-size: 14px; }
-  .si-box .save { background: #F5C542; color: #1F2430; }
-  .si-msg { color: #FFB4B4; font-size: 13px; min-height: 18px; margin: 12px 0 0; }
-  .si-link { background: none; border: 0; color: #C9CEDA; text-decoration: underline; font-size: 13px; margin-top: 6px; }
-  .si-note { color: #8A90A2; font-size: 12px; margin-top: 18px; }
+  .si-box { width: 100%; max-width: 340px; }
+  .si-box img { width: 112px; height: 112px; border-radius: 28px; box-shadow: 0 14px 36px rgba(201,138,16,.22), 0 2px 6px rgba(0,0,0,.05); }
+  .si-box h1 { margin: 20px 0 4px; font-size: 30px; letter-spacing: -0.5px; }
+  .si-sub { color: #8b95a1; margin: 0 0 34px; font-size: 14px; }
+  .si-box .save { background: #1f2b4d; color: #fff; border-radius: 14px; }
+  .si-msg { color: #f04452; font-size: 13px; min-height: 18px; margin: 12px 0 0; }
+  .si-link { background: none; border: 0; color: #8b95a1; text-decoration: underline; font-size: 13px; margin-top: 6px; }
+  .si-note { color: #b0b8c1; font-size: 12px; margin-top: 18px; }
 
   /* who (가계 카드 안) */
   .who { margin-top: 12px; }
@@ -424,6 +424,7 @@
   .q-sum { border-radius: 14px; }
   .go-add { border: 0; background: var(--soft); border-radius: 14px; font-weight: 600; }
   .cal-cell { background: #fafbfc; border-radius: 10px; }
+  #loading { background: #fff; }
   @media (min-width: 1000px) {
     .catgrid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     .tx:hover .btns { display: flex; }
@@ -465,7 +466,7 @@
 </div></div>
 
 <header class="top">
-  <div class="brand"><img class="logo" src="https://fonts.gstatic.com/s/e/notoemoji/latest/1fa99/512.png" alt="">불림<small>우리집 자산 · 가계</small></div>
+  <div class="brand"><img class="logo" src="coin.png" alt="">불림<small>우리집 자산 · 가계</small></div>
   <div class="month">
     <button id="prevM" aria-label="이전 달">‹</button>
     <span id="monthLabel" class="num"></span>
