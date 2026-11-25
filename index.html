@@ -915,13 +915,13 @@
         return shape_(V);
       });
   }
-  // 고정항목: 수입 B항목명 C금액 D입금일 E입금통장 / 지출 I항목명 J대분류 K금액 L납부일 M결제수단 N받는통장
+  // 고정항목: 수입 B항목명 C금액 D입금일 E입금통장 / 지출 I항목명 J대분류 K항목 L금액 M납부일 N결제수단 O받는통장
   function fixed_(V) {
     var day = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ""), 10); return isFinite(n) ? n : 0; };
     var a = (V.W_FIXED_IN || []).filter(function (r) { return s_(r[0]) !== ""; })
       .map(function (r) { r = pad_(r, 4); return { kind: "in", name: s_(r[0]), amount: n_(r[1]), day: day(r[2]), pay: s_(r[3]) }; });
     var b = (V.W_FIXED_OUT || []).filter(function (r) { return s_(r[0]) !== ""; })
-      .map(function (r) { r = pad_(r, 6); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), amount: n_(r[2]), day: day(r[3]), pay: s_(r[4]), recv: s_(r[5]) }; });
+      .map(function (r) { r = pad_(r, 7); return { kind: "out", name: s_(r[0]), cat: s_(r[1]), item: s_(r[2]), amount: n_(r[3]), day: day(r[4]), pay: s_(r[5]), recv: s_(r[6]) }; });
     return a.concat(b);
   }
   // 지수데이터 탭: A날짜 B코스피 C S&P D나스닥 E비트코인 F금(GLD) G달러 H서울아파트 I~P 보유종목 8개 (주간 종가)
@@ -1228,11 +1228,11 @@
   // 누가 얼마 썼을까 (가계 카드 안에 한 줄로)
   function whoBlock() {
     var mem = D.members.map(function (n) { return { name: n, v: sumBy(function (x) { return x.who === n && x.type === "지출" && x.date.slice(0, 7) === ym; }) }; });
-    var tot = mem.reduce(function (s, x) { return s + x.v; }, 0), colors = ["var(--blue)", "var(--orange)"];
+    var tot = mem.reduce(function (s, x) { return s + x.v; }, 0), colors = ["var(--blue)", "var(--orange)", "#8b95a1", "#12b886"];   // 3번째(공동)는 회색
     if (!mem.length) return "";
     return '<div class="who"><div class="who-lab"><span class="muted">누가 썼나</span>' +
-      mem.map(function (x, i) { return '<span><i style="background:' + colors[i % 2] + '"></i>' + esc(x.name) + ' <b class="num">' + won(x.v) + "</b>" + (tot ? ' <small class="muted">' + Math.round(x.v / tot * 100) + "%</small>" : "") + "</span>"; }).join("") + "</div>" +
-      (tot ? '<div class="split">' + mem.map(function (x, i) { return '<i style="flex:' + x.v + ";background:" + colors[i % 2] + '"></i>'; }).join("") + "</div>" : "") + "</div>";
+      mem.map(function (x, i) { return '<span><i style="background:' + colors[i % colors.length] + '"></i>' + esc(x.name) + ' <b class="num">' + won(x.v) + "</b>" + (tot ? ' <small class="muted">' + Math.round(x.v / tot * 100) + "%</small>" : "") + "</span>"; }).join("") + "</div>" +
+      (tot ? '<div class="split">' + mem.map(function (x, i) { return '<i style="flex:' + x.v + ";background:" + colors[i % colors.length] + '"></i>'; }).join("") + "</div>" : "") + "</div>";
   }
 
   function tile(t, v, color, extra) {
@@ -1681,6 +1681,7 @@
     // 한 줄 메모 (시트 '월간메모' 탭에 저장)
     var memos = (D.reviews || []).filter(function (r) { return r.month === ym; });
     h += '<div class="rv-sec"><b>' + m + "월 한 줄 메모</b>" + D.members.map(function (who, i) {
+      if (who === "공동") return "";   // 한 줄 메모는 사람마다
       var r = memos.filter(function (x) { return x.who === who; })[0];
       return '<div class="rv-memo"><div class="who">' + esc(who) + '</div><div style="flex:1;min-width:0"><textarea class="input" id="rvMemo' + i + '" maxlength="300" placeholder="이번 달 잘한 점, 다음 달 다짐…">' + esc(r ? r.memo : "") + "</textarea>" +
         (r && r.at ? '<span class="when">' + esc(r.at) + " 저장</span>" : "") + '</div><button type="button" data-rv-save="' + i + '">저장</button></div>';
@@ -1715,7 +1716,7 @@
       '<div class="field"><label>금액</label><div class="amount-wrap"><input class="input num" id="fAmt" inputmode="decimal" placeholder="0" autocomplete="off">' +
       '<div class="seg cur" id="fCur"><button type="button" data-v="KRW" class="' + (form.currency === "KRW" ? "on" : "") + '">원</button><button type="button" data-v="USD" class="' + (form.currency === "USD" ? "on" : "") + '">$</button></div></div>' +
       '<div class="hint" id="fAmtHint"></div></div>' +
-      '<div class="field"><label>결제수단</label><select class="input" id="fPay">' + pays.map(function (p) { return '<option' + (p === payDefault ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") + "</select></div>" +
+      '<div class="field"><label>' + (form.group === "수입" ? "입금 통장" : "결제수단") + '</label><select class="input" id="fPay">' + pays.map(function (p) { return '<option' + (p === payDefault ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") + "</select></div>" +
       // 받는 통장: 이체·저축/투자일 때만 (통장끼리 옮기거나 적금에 넣는 돈 → 그 통장 잔액에 더해짐)
       (form.group === "이체" || form.group === "저축/투자" ? '<div class="field"><label>받는 통장 (선택)</label><select class="input" id="fRecv"><option value="">없음</option>' +
         (D.accounts || []).map(function (a) { return '<option' + (editing && editing.recv === a.name ? " selected" : "") + ">" + esc(a.name) + "</option>"; }).join("") +
@@ -2225,7 +2226,7 @@
   function whoColor(n) { var i = D.members.indexOf(n); return i >= 0 ? MEMBER_COLORS[i % MEMBER_COLORS.length] : ""; }
   function calLegend() {
     if (!calReady() || !calHasScope() || !(D.memberMails || []).length) return "";
-    return '<div class="ev-legend">' + D.members.map(function (n) { return '<span><i style="background:' + whoColor(n) + '"></i>' + esc(n) + "</span>"; }).join("") + '<span class="muted">일정 만든 사람</span></div>';
+    return '<div class="ev-legend">' + D.members.filter(function (n, i) { return (D.memberMails || [])[i]; }).map(function (n) { return '<span><i style="background:' + whoColor(n) + '"></i>' + esc(n) + "</span>"; }).join("") + '<span class="muted">일정 만든 사람</span></div>';
   }
   function calIsHoliday(c) { return /holiday/i.test(c.id || ""); }
   function calLoadList() {
