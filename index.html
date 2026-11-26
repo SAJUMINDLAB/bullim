@@ -758,6 +758,53 @@
   .set-seg button.on { background: #1f2b4d; color: #fff; border-color: #1f2b4d; }
   body.set-lock { overflow: hidden; }
   body.mask main .num, body.mask main .big, body.mask main .v { filter: blur(7px); }
+  /* 앱 잠금 화면 */
+  #lockScreen { position: fixed; inset: 0; z-index: 90; display: none; place-items: center; padding: 24px; background: var(--page); text-align: center; }
+  #lockScreen.show { display: grid; }
+  .lk-box { width: 100%; max-width: 320px; }
+  .lk-box img { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 12px 30px rgba(201,138,16,.2); }
+  .lk-box h2 { margin: 18px 0 26px; font-size: 20px; color: var(--ink); }
+  .lk-btn { width: 100%; border: 0; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; background: #1f2b4d; color: #fff; }
+  .lk-msg { min-height: 18px; color: var(--red); font-size: 13px; margin: 12px 0 0; }
+  .lk-alt { margin-top: 18px; border: 0; background: none; color: var(--muted); font-size: 12.5px; text-decoration: underline; }
+  /* 월 예산 고치기 */
+  .bud-tot { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0 10px; border-bottom: 1px solid var(--line); }
+  .bud-tot span { font-size: 13px; color: var(--muted); }
+  .bud-tot b { font-size: 20px; font-weight: 800; color: var(--ink); }
+  .bud-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .bud-row .bud-n { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .bud-row .input { flex: 0 0 132px; width: 132px; text-align: right; padding: 9px 10px; margin: 0; }
+  .bud-row .bud-w { flex: 0 0 auto; font-size: 13px; color: var(--muted); }
+
+  /* ===== 다크 모드 (메뉴 › 화면 모드) ===== */
+  body.dark { --ink:#e8ebf0; --navy:#3d5a99; --muted:#8e96a3; --line:#262b33; --soft:#1c2027; --page:#0f1216; --card:#171a20;
+    --icon-bg:#232830; --icon:#b5bcc8; --bar:#7d9bd9; --gray:#5b6270; color-scheme: dark; }
+  body.dark, html:has(body.dark) { background: #0f1216; color: var(--ink); }
+  body.dark .top { background: rgba(23,26,32,.94); box-shadow: 0 1px 0 rgba(255,255,255,.06); }
+  body.dark .tabs { background: #171a20; border-top-color: #262b33; }
+  body.dark .tabs button { color: #7d8594; }
+  body.dark .tabs button.on { color: #e8ebf0; }
+  body.dark .card, body.dark .set-card, body.dark .set-head, body.dark .cal-cell, body.dark .ev-box { background: #171a20; color: var(--ink); }
+  body.dark .set-head { border-bottom-color: #262b33; }
+  body.dark .hero { background: #1b2440; }
+  body.dark .month button:hover, body.dark .icon-btn:hover { background: #262b33; }
+  body.dark .meter { background: #262b33; }
+  body.dark .input, body.dark input, body.dark textarea, body.dark select { background: #1c2027; color: var(--ink); border-color: #2a2f38; }
+  body.dark .input:focus { background: #20252d; }
+  body.dark .edit, body.dark .del, body.dark .set-seg button, body.dark .chip { background: #232830; color: var(--icon); border-color: #2a2f38; }
+  body.dark .chip.on, body.dark .set-seg button.on { background: #3d5a99; color: #fff; border-color: #3d5a99; }
+  body.dark .badge { background: #232830; color: var(--icon); }
+  body.dark .badge.hot, body.dark .flow-alert { background: #3a1d22; color: #ff7b86; }
+  body.dark .flow-ok, body.dark .c-flow .badge.ok { background: #16302a; color: #4ad6a0; }
+  body.dark .set-tip { background: #1a2333; color: #b5c3dc; }
+  body.dark .seg { background: #1c2027; }
+  body.dark .seg button.on { background: #2b313b; color: var(--ink); }
+  body.dark .tx.open { background: #1c2027; }
+  body.dark .catgrid button.on .ci { background: #3d5a99; }
+  body.dark #toast { background: #e8ebf0; color: #111418; }
+  body.dark svg text { fill: #8e96a3; }
+  body.dark .lk-box img { box-shadow: none; }
+  body.dark #chatInput { background: #f2f3f5; color: #191f28; border-color: transparent; }   /* 대화창은 카톡처럼 밝게 그대로 */
 </style>
 </head>
 <body>
@@ -810,7 +857,7 @@
 </main>
 <div id="toast"></div>
 
-<script>window.__BUILD__="20261126150637";</script>
+<script>window.__BUILD__="20261126153815";</script>
 <script>
 (function () {
   "use strict";
@@ -1222,8 +1269,8 @@
       reviews: (V.W_REVIEW || []).map(function (r) { r = pad_(r, 4); return { month: typeof r[0] === "number" ? d_(r[0]).slice(0, 7) : s_(r[0]).trim(), who: s_(r[1]), memo: s_(r[2]), at: s_(r[3]) }; })
         .filter(function (r) { return r.month && r.who; }),
       // 설정 B구분 C대분류 D예산 + A그림(W_CAT_ICON, 같은 줄)
-      cats: V.W_CATS.map(function (r, i) { return { r: r, icon: s_(((V.W_CAT_ICON || [])[i] || [])[0]).trim() }; })
-        .filter(function (o) { return s_(o.r[1]) !== ""; }).map(function (o) { return { group: s_(o.r[0]), name: s_(o.r[1]), budget: n_(o.r[2]), icon: o.icon }; }),
+      cats: V.W_CATS.map(function (r, i) { return { r: r, row: 5 + i, icon: s_(((V.W_CAT_ICON || [])[i] || [])[0]).trim() }; })
+        .filter(function (o) { return s_(o.r[1]) !== ""; }).map(function (o) { return { group: s_(o.r[0]), name: s_(o.r[1]), budget: n_(o.r[2]), icon: o.icon, row: o.row }; }),
       items: V.W_ITEMS.filter(function (r) { return s_(r[0]) !== "" && s_(r[1]) !== ""; }).map(function (r) { return { cat: s_(r[0]), name: s_(r[1]) }; }),
       members: V.W_MEMBERS.map(function (r) { return s_(r[0]); }).filter(String),
       pays: V.W_PAYS.map(function (r) { return s_(r[0]); }).filter(function (p, i, a) { return p && a.indexOf(p) === i; })
@@ -1352,6 +1399,15 @@
       if (s_(r[1]) !== s_(who) || s_(r[2]) !== s_(text)) throw new Error("그 사이에 대화가 바뀌었어요. 잠시 뒤 다시 해 주세요.");
       return gapi("POST", "/values/" + enc(a1) + ":clear", {}, true);
     }).then(apiChatGet);
+  }
+
+  /** 월 예산 고치기: 설정 탭 D열 (W_CATS 줄 번호 그대로) */
+  function apiSaveBudgets(list) {
+    var data = (list || []).filter(function (b) { return b.row >= 5 && b.row <= 35; }).map(function (b) {
+      return { range: "'설정'!D" + b.row, values: [[Number(b.budget) || ""]] };
+    });
+    if (!data.length) return apiGetData();
+    return gapi("POST", "/values:batchUpdate", { valueInputOption: "USER_ENTERED", data: data }).then(apiGetData);
   }
 
   /** 폰 알림: 이 기기의 알림 토큰·설정을 '알림설정' 탭에 (같은 기기 줄이 있으면 고치고, 없으면 첫 빈 줄에) */
@@ -2133,6 +2189,7 @@
     call("addTransaction", [t], function (d) {
       D = d; $("fAmt").value = ""; $("fDesc").value = ""; $("fMemo").value = ""; form.item = ""; sug = null; form.manual = false; form.photos = [];
       render(); toast("저장했어요 · " + t.cat + " " + (t.currency === "USD" ? "$" + amt : won(amt)));
+      if (typeof pushNotifyBig === "function") pushNotifyBig([t]);
       phAfterSave(t, pend, []);
     });
   }
@@ -2283,6 +2340,7 @@
     call("addTransactions", [ts], function (d) {
       D = d; aiAddS = { open: false, text: "", img: null, list: null, busy: false, msg: "" };
       render(); toast(ts.length + "건 저장했어요");
+      if (typeof pushNotifyBig === "function") pushNotifyBig(ts);
     });
   }
   function aiLoadImage(file) {
@@ -3084,8 +3142,8 @@
   // 폰 알림: Firebase Cloud Messaging. 이 폰의 알림 토큰과 설정을 시트 '알림설정' 탭에 저장하면
   // '불림 사진' 서버(설정 J14)가 아침 정리·일정·배우자 메시지·돈 알림을 보내요. (깃허브 버전에서만)
   var FB_VER = "10.14.1";
-  var PUSH_DEF = { on: true, morning: true, event: true, lead: 60, evAll: false, chat: true, money: true, quiet: "" };
-  var SETS = { busy: false, msg: "", msgCls: "", refreshed: false };
+  var PUSH_DEF = { on: true, morning: true, event: true, lead: 60, evAll: false, chat: true, money: true, weekly: true, monthly: true, big: true, bigAmt: 100000, quiet: "" };
+  var SETS = { busy: false, msg: "", msgCls: "", refreshed: false, page: "main", bud: null, budMsg: "", lockMsg: "" };
   var SHEET_URL = "https://docs.google.com/spreadsheets/d/10rbJw0H3DmN5Tz9nFhrYMEQiJ-Ylx_rmGT-qsmlzjM0/edit";
   (function () {   // 알림을 눌러 열면 ?go=chat|cal|home → 로그인 다녀와도 기억했다가 데이터가 뜨면 그 화면으로
     try {
@@ -3093,6 +3151,10 @@
       if (g) { store("bullim_go", g); history.replaceState(null, "", location.pathname + location.hash); }
     } catch (e) {}
     if (store("ui_mask") === "1") document.body.classList.add("mask");
+    themeApply();
+    // 구글로 다시 로그인해서 잠금을 푼 경우 (Face ID가 안 될 때의 비상구) → 잠금 끄기
+    if (store("lock_reset") === "1" && /access_token=/.test(location.hash)) { store("lock_reset", ""); store("lock_on", ""); store("lock_cred", ""); }
+    if (lockOn()) setTimeout(function () { lockShow(true); }, 0);
   })();
   function goAfterLoad() {
     if (!D) return;
@@ -3255,6 +3317,7 @@
     var owners = (D ? D.members : []).filter(function (n, i) { return (D.memberMails || [])[i] || i < 2; }).slice(0, 4);
     var calOn = typeof calHasScope === "function" && calHasScope() && typeof calReady === "function" && calReady();
     var off = on ? "" : " set-off";
+    if (SETS.page === "budget") { el.innerHTML = budgetHtml(); return; }
     var h = '<div class="set-head"><button type="button" data-set-close aria-label="닫기">‹</button><b>메뉴</b></div><div class="set-body">';
 
     // 알림
@@ -3268,6 +3331,10 @@
       swRow("evAll", "배우자 개인 일정도", "끄면 공유 일정과 내 일정만 알려 줘요", s.evAll) +
       swRow("chat", "배우자 메시지", "불림 대화창에 상대가 말을 보내면 바로", s.chat) +
       swRow("money", "돈 알림", "매일 아침 8시쯤: 오늘·내일 빠질 돈, 통장 부족, 예산 초과, 배당 들어온 날", s.money) +
+      swRow("big", "배우자 큰 지출", "배우자가 앱에서 이 금액 넘게 쓴 내역을 적으면",
+        s.big, '<select data-set="bigAmt" onclick="event.stopPropagation()">' + [50000, 100000, 300000, 500000].map(function (m) { return '<option value="' + m + '"' + (Number(s.bigAmt) === m ? " selected" : "") + ">" + (m / 10000) + "만 원+</option>"; }).join("") + "</select>") +
+      swRow("weekly", "주간 정리", "일요일 저녁 8시: 이번 주 쓴 돈, 지난주 비교, 다음 주 고정비·일정", s.weekly) +
+      swRow("monthly", "월말 결산", "매달 마지막 날 저녁 8시: 수입·지출·저축률, 예산, 순자산 변화", s.monthly) +
       '<label class="sw-row"><span class="t">방해 금지 시간<small>이 시간엔 알림을 보내지 않아요</small></span><select data-set="quiet">' +
       [["", "끄기"], ["23-7", "밤 11시 ~ 아침 7시"], ["22-8", "밤 10시 ~ 아침 8시"], ["0-7", "자정 ~ 아침 7시"]].map(function (o) {
         return '<option value="' + o[0] + '"' + (String(s.quiet || "") === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
@@ -3290,8 +3357,25 @@
         '<div class="set-note">배우자 개인 일정까지 보려면 서로 구글 캘린더를 공유해 두세요 (시트 사용법 탭 참고).</div></div>';
     }
 
+    // 앱 잠금
+    var lk = lockSupported();
+    h += '<div class="set-card"><h3>🔒 앱 잠금</h3>' +
+      swRow("ui-lock", "Face ID로 잠그기", lk ? "불림을 열 때 Face ID(또는 폰 암호)로 풀어요 · 이 폰에만" : "깃허브 주소로 연 불림 앱(홈 화면 아이콘)에서만 돼요", lockOn()) +
+      (lockOn() ? '<label class="sw-row"><span class="t">다시 잠그는 때<small>다른 앱에 갔다 돌아왔을 때</small></span><select data-set="ui-lockafter">' +
+        [["0", "바로"], ["60000", "1분 뒤"], ["300000", "5분 뒤"], ["1800000", "30분 뒤"]].map(function (o) { return '<option value="' + o[0] + '"' + (lockAfter() === Number(o[0]) ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" : "") +
+      (SETS.lockMsg ? '<div class="set-note warn">' + esc(SETS.lockMsg) + "</div>" : "") + "</div>";
+
+    // 월 예산
+    h += '<div class="set-card"><h3>📊 월 예산</h3>' +
+      '<div class="set-note">지출 분류별 한 달 예산을 여기서 바로 고쳐요 (시트 설정 탭 D열에 저장).</div>' +
+      '<button type="button" class="set-btn pri" data-set-act="budget">예산 고치기</button></div>';
+
     // 화면
-    h += '<div class="set-card"><h3>🙈 화면</h3>' +
+    var th = themeGet();
+    h += '<div class="set-card"><h3>🌙 화면</h3>' +
+      '<div class="sw-row" style="cursor:default"><span class="t">화면 모드<small>자동 = 아이폰 설정(다크 모드)을 따라가요</small></span></div>' +
+      '<div class="set-seg">' + [["auto", "자동"], ["light", "밝게"], ["dark", "어둡게"]].map(function (o) {
+        return '<button type="button" data-set-theme="' + o[0] + '"' + (th === o[0] ? ' class="on"' : "") + ">" + o[1] + "</button>"; }).join("") + "</div>" +
       swRow("ui-mask", "금액 가리기", "남들 앞에서 앱을 열 때 숫자를 흐리게 (여기서 다시 끄면 보여요)", document.body.classList.contains("mask")) + "</div>";
 
     // 앱 정보
@@ -3305,7 +3389,9 @@
   }
   function setClick(e) {
     var b = e.target.closest("button, a"); if (!b) return;
-    if (b.hasAttribute("data-set-close")) { setClose(); return; }
+    if (b.hasAttribute("data-set-close")) { if (SETS.page !== "main") { SETS.page = "main"; setRender(); $("setPanel").scrollTop = 0; } else setClose(); return; }
+    if (b.dataset.setTheme) { themeSet(b.dataset.setTheme); haptic(6); setRender(); return; }
+    if (b.hasAttribute("data-bud-save")) { budgetSave(); return; }
     if (b.dataset.setMe) {
       store("chat_me", b.dataset.setMe); haptic(6);
       if (pushIsOn()) pushSave().catch(function () {});
@@ -3314,6 +3400,7 @@
     }
     var a = b.dataset.setAct;
     if (a === "test") pushTest();
+    else if (a === "budget") { SETS.page = "budget"; SETS.bud = null; SETS.budMsg = ""; setRender(); $("setPanel").scrollTop = 0; }
     else if (a === "relogin") { try { localStorage.removeItem("bullim_tok"); } catch (x) {} signIn(true); }
     else if (a === "cal") signIn();
     else if (a === "update") location.replace(location.pathname + "?u=" + Date.now());
@@ -3322,11 +3409,119 @@
     var t = e.target, k = t.dataset && t.dataset.set; if (!k) return;
     if (k === "on") { if (t.checked) pushEnable(); else pushDisable(); return; }
     if (k === "ui-mask") { document.body.classList.toggle("mask", t.checked); store("ui_mask", t.checked ? "1" : ""); return; }
+    if (k === "ui-lock") { if (t.checked) lockEnable(); else { store("lock_on", ""); SETS.lockMsg = ""; setRender(); } return; }
+    if (k === "ui-lockafter") { store("lock_after", t.value); return; }
     var s = pushSet();
-    s[k] = t.type === "checkbox" ? t.checked : (k === "lead" ? Number(t.value) || 60 : t.value);
+    s[k] = t.type === "checkbox" ? t.checked : (k === "lead" ? Number(t.value) || 60 : k === "bigAmt" ? Number(t.value) || 100000 : t.value);
     pushSetSave(s);
     pushSave().catch(function (x) { toast("저장 실패: " + (x && x.message ? x.message : x)); });
     setRender();
+  }
+
+  // ---------- 화면 모드 (자동 / 밝게 / 어둡게) ----------
+  function themeGet() { var t = store("ui_theme"); return t === "light" || t === "dark" ? t : "auto"; }
+  function themeApply() {
+    var t = themeGet(), dark = t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.body.classList.toggle("dark", !!dark);
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", dark ? "#111418" : "#ffffff");
+  }
+  function themeSet(t) { store("ui_theme", t === "auto" ? "" : t); themeApply(); if (D && typeof render === "function") render(); }
+  if (window.matchMedia) { try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (themeGet() === "auto") { themeApply(); if (D) render(); } }); } catch (e) {} }
+
+  // ---------- 앱 잠금 (Face ID / 폰 암호, 이 폰에만) ----------
+  // 폰에 저장된 패스키로 '본인 확인'만 해요 (서버로 보내는 건 없음). Face ID가 안 되면 구글로 다시 로그인해서 풀 수 있어요.
+  var LOCK = { shown: false, hiddenAt: 0, trying: false };
+  function lockOn() { return store("lock_on") === "1" && !!store("lock_cred"); }
+  function lockAfter() { var v = store("lock_after"); return v === null || v === "" ? 60000 : Number(v) || 0; }
+  function lockSupported() { return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext && typeof apiPushSave === "function"); }
+  function b64u(buf) { var s = "", a = new Uint8Array(buf); for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function unb64u(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  function rnd(n) { var a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+  function lockEnable() {
+    SETS.lockMsg = "";
+    if (!lockSupported()) { SETS.lockMsg = "이 화면에선 앱 잠금을 쓸 수 없어요. 홈 화면의 불림 아이콘으로 열어 주세요."; setRender(); return; }
+    navigator.credentials.create({ publicKey: {
+      challenge: rnd(32), rp: { name: "불림" },
+      user: { id: rnd(16), name: "불림 · " + (chatMe() || "나"), displayName: "불림 " + (chatMe() || "") },
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+      authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" },
+      timeout: 60000, attestation: "none" } })
+      .then(function (c) { store("lock_cred", b64u(c.rawId)); store("lock_on", "1"); if (!store("lock_after")) store("lock_after", "60000"); toast("앱 잠금을 켰어요"); setRender(); })
+      .catch(function (e) { SETS.lockMsg = "앱 잠금을 못 켰어요" + (e && e.name === "NotAllowedError" ? " (취소했거나 Face ID를 쓸 수 없어요)." : ": " + (e && e.message ? e.message : e)); setRender(); });
+  }
+  function lockShow(auto) {
+    if (LOCK.shown) return;
+    LOCK.shown = true;
+    var el = $("lockScreen");
+    if (!el) {
+      el = document.createElement("div"); el.id = "lockScreen";
+      el.innerHTML = '<div class="lk-box"><img src="' + (typeof apiPushSave === "function" ? "icon-512.png" : "https://fonts.gstatic.com/s/e/notoemoji/latest/1fa99/512.png") + '" alt=""><h2>불림이 잠겨 있어요</h2>' +
+        '<button type="button" class="lk-btn" id="lkGo">Face ID로 열기</button><p class="lk-msg" id="lkMsg"></p>' +
+        '<button type="button" class="lk-alt" id="lkAlt">Face ID가 안 돼요 → 구글로 다시 로그인</button></div>';
+      document.body.appendChild(el);
+      el.querySelector("#lkGo").onclick = function () { lockTry(); };
+      el.querySelector("#lkAlt").onclick = function () { store("lock_reset", "1"); try { localStorage.removeItem("bullim_tok"); } catch (x) {} if (typeof signIn === "function") signIn(true); };
+    }
+    el.classList.add("show"); document.body.classList.add("set-lock");
+    $("lkMsg").textContent = "";
+    if (auto) setTimeout(function () { lockTry(true); }, 350);
+  }
+  function lockTry(quiet) {
+    if (LOCK.trying) return; LOCK.trying = true;
+    navigator.credentials.get({ publicKey: { challenge: rnd(32), allowCredentials: [{ type: "public-key", id: unb64u(store("lock_cred")), transports: ["internal"] }], userVerification: "required", timeout: 60000 } })
+      .then(function () { LOCK.shown = false; $("lockScreen").classList.remove("show"); if (!($("setPanel") && $("setPanel").classList.contains("show"))) document.body.classList.remove("set-lock"); haptic(8); })
+      .catch(function (e) { if (!quiet) $("lkMsg").textContent = e && e.name === "NotAllowedError" ? "확인이 안 됐어요. 다시 눌러 주세요." : "잠금을 못 풀었어요: " + (e && e.message ? e.message : e); })
+      .then(function () { LOCK.trying = false; });
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (!lockOn()) return;
+    if (document.hidden) LOCK.hiddenAt = Date.now();
+    else if (LOCK.hiddenAt && Date.now() - LOCK.hiddenAt >= lockAfter()) lockShow(true);
+  });
+
+  // ---------- 월 예산 바로 고치기 ----------
+  function budgetHtml() {
+    if (!SETS.bud) SETS.bud = (D ? D.cats : []).filter(function (c) { return c.group === "지출" && c.row; }).map(function (c) { return { row: c.row, name: c.name, v: c.budget || 0, old: c.budget || 0 }; });
+    var tot = SETS.bud.reduce(function (s, b) { return s + (Number(b.v) || 0); }, 0);
+    var ok = typeof apiSaveBudgets === "function";
+    return '<div class="set-head"><button type="button" data-set-close aria-label="뒤로">‹</button><b>월 예산</b></div><div class="set-body"><div class="set-card">' +
+      '<div class="bud-tot"><span>한 달 예산 합계</span><b class="num" id="budTot">' + won(tot) + "</b></div>" +
+      SETS.bud.map(function (b, i) {
+        return '<div class="bud-row"><span class="bud-n">' + esc(b.name) + '</span>' +
+          '<input class="input num" inputmode="numeric" data-bud="' + i + '" value="' + (b.v ? Number(b.v).toLocaleString("ko-KR") : "") + '" placeholder="0"><span class="bud-w">원</span></div>';
+      }).join("") +
+      (SETS.budMsg ? '<div class="set-note ' + (/^저장했/.test(SETS.budMsg) ? "ok" : "warn") + '">' + esc(SETS.budMsg) + "</div>" : "") +
+      '<button type="button" class="set-btn pri" data-bud-save' + (ok ? "" : " disabled") + ">" + (ok ? "저장" : "깃허브 앱에서만 저장할 수 있어요") + "</button>" +
+      '<div class="set-note">비우면 예산 없음(0). 앱 홈의 예산 카드, 불림봇의 하루 쓸 돈 계산이 바로 바뀌어요.</div></div></div>';
+  }
+  document.addEventListener("input", function (e) {
+    var t = e.target; if (!t.dataset || t.dataset.bud === undefined || !SETS.bud) return;
+    var n = Number(String(t.value).replace(/[^0-9]/g, "")) || 0;
+    SETS.bud[Number(t.dataset.bud)].v = n;
+    t.value = n ? n.toLocaleString("ko-KR") : "";
+    var tot = SETS.bud.reduce(function (s, b) { return s + (Number(b.v) || 0); }, 0);
+    if ($("budTot")) $("budTot").textContent = won(tot);
+  });
+  function budgetSave() {
+    var ch = (SETS.bud || []).filter(function (b) { return Number(b.v) !== Number(b.old); });
+    if (!ch.length) { SETS.budMsg = "바뀐 예산이 없어요."; setRender(); return; }
+    SETS.budMsg = "저장하는 중…"; setRender();
+    apiSaveBudgets(ch.map(function (b) { return { row: b.row, budget: Number(b.v) || 0 }; })).then(function (d) {
+      D = d; render(); SETS.bud = null; SETS.budMsg = "저장했어요 (" + ch.length + "개 분류)"; setRender(); haptic(10);
+    }).catch(function (e) { SETS.budMsg = "저장 실패: " + (e && e.message ? e.message : e); setRender(); });
+  }
+
+  // ---------- 배우자 큰 지출 알림 (앱에서 적은 지출만) ----------
+  function pushNotifyBig(list) {
+    if (!(D && D.photoUrl) || typeof token !== "function") return;
+    (list || []).forEach(function (t) {
+      var cat = (D.cats || []).filter(function (c) { return c.name === t.cat; })[0];
+      if (!cat || cat.group !== "지출") return;
+      var amt = Number(t.amount) || 0; if (t.currency === "USD") amt = Math.round(amt * ((D.asset && D.asset.fx) || 1400));
+      if (amt < 50000) return;
+      var who = t.who || chatMe() || "";
+      pushServer({ kind: "big", from: who, amount: amt, title: "💸 " + who + " · " + won(amt), body: (t.desc || t.item || t.cat) + " · " + t.cat + (t.pay ? " · " + t.pay : ""), go: "list" }).catch(function () {});
+    });
   }
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("#menuBtn")) { haptic(6); setOpen(); } });
   // SET-END
