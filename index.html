@@ -339,7 +339,8 @@
   /* 넓은 PC: 4칸 */
   @media (min-width: 1280px) {
     #homeGrid { grid-template-columns: repeat(4, minmax(0, 1fr));
-      grid-template-areas: "hero hero hero hero" "month month card trend" "budget budget div goal"; }
+      grid-template-areas: "hero hero hero hero" "month month card trend" "budget budget flow flow" "div div goal goal"; }
+    #homeGrid > .card { min-width: 0; }
   }
   /* ===== 디자인 A: 네이비 & 탠저린 (2026-11 개편) ===== */
   :root { --navy:#1f2b4d; --ink:#1f2b4d; --muted:#7b8299; --line:#ebebe7; --soft:#f6f6f3; --page:#f4f4f2; --card:#ffffff;
@@ -463,6 +464,13 @@
   /* 통장 준비 */
   .flow-alert { background: #fff1f2; color: var(--red); font-weight: 700; font-size: 13px; border-radius: 10px; padding: 8px 12px; margin-bottom: 4px; }
   .flow-ok { background: #effaf4; color: #12a05c; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 8px 12px; margin-bottom: 4px; }
+  .c-flow .flow-sum { margin-bottom: 8px; }
+  .c-flow .fl-amt { display: grid; justify-items: end; text-align: right; flex: 0 0 auto; line-height: 1.3; }
+  .c-flow .fl-amt .fl-lab { font-size: 11px; color: var(--muted); }
+  .c-flow .fl-amt b { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .c-flow .fl-amt small { font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .c-flow .fl-amt .neg { color: var(--red); }
+  .c-flow .fl-amt small.ok { color: #12a05c; }
   .c-flow .badge { text-align: right; line-height: 1.35; }
   .c-flow .badge.ok { background: #effaf4; color: #12a05c; }
   .c-flow .list-line .amt { text-align: right; display: grid; }
@@ -764,7 +772,7 @@
 </main>
 <div id="toast"></div>
 
-<script>window.__BUILD__="20261126001049";</script>
+<script>window.__BUILD__="20261126140738";</script>
 <script>
 (function () {
   "use strict";
@@ -1458,12 +1466,18 @@
     if (!fl.length && !(D.outPlan || []).length) return "";
     var bad = fl.filter(function (f) { return /^⚠/.test(f.status); });
     var plan = D.outPlan || [];
+    var balSum = fl.reduce(function (s, f) { return s + (f.balance || 0); }, 0);
+    var outSum = fl.reduce(function (s, f) { return s + (f.out || 0); }, 0);
     return '<div class="card c-flow"><h2>통장 준비<span class="sub">앞으로 한 달 고정 출금</span></h2>' +
+      (fl.length ? '<div class="tiles flow-sum">' + tile("현재 잔액 합계", won(balSum), "var(--navy)") + tile("한 달 고정 출금", won(outSum), "var(--red)") + "</div>" : "") +
       (bad.length ? '<div class="flow-alert">' + bad.length + "개 통장에 돈을 더 넣어야 해요</div>" : '<div class="flow-ok">모든 통장 잔액이 충분해요</div>') +
       fl.map(function (f) {
         var warn = /^⚠/.test(f.status);
-        return '<div class="list-line"><div class="grow"><b>' + esc(f.name) + '</b><div class="s">다음 출금 ' + esc(f.next) + " · " + esc(f.cnt) + " " + num(f.out) + "원 · 지금 " + num(f.balance) + "원</div></div>" +
-          '<span class="badge' + (warn ? " hot" : " ok") + '">' + (warn ? esc(f.status.replace(/^⚠\s*/, "").replace(" 더 넣기", " 부족")).replace("까지 ", "까지<br>") : "충분") + "</span></div>";
+        var st = warn ? f.status.replace(/^⚠\s*/, "").replace(" 더 넣기", " 부족") : "충분";
+        return '<div class="list-line"><div class="grow"><b>' + esc(f.name) + '</b>' +
+          '<div class="s">다음 출금 ' + esc(f.next) + " · " + esc(f.cnt) + " " + num(f.out) + "원</div></div>" +
+          '<div class="fl-amt num"><span class="fl-lab">현재 잔액</span><b' + (f.balance < 0 ? ' class="neg"' : "") + ">" + num(f.balance) + "원</b>" +
+          '<small class="' + (warn ? "neg" : "ok") + '">' + esc(st) + "</small></div></div>";
       }).join("") +
       (plan.length ? '<details class="flow-plan"><summary>날짜별 출금 예정 ' + plan.length + "건 보기</summary>" + plan.map(function (x) {
         var card = /^신용카드/.test(x.acct);
