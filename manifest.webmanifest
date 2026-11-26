@@ -3,7 +3,8 @@
   "short_name": "불림",
   "start_url": "./",
   "scope": "./",
-  "display": "browser",
+  "display": "standalone",
+  "id": "./",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
