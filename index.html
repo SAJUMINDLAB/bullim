@@ -474,6 +474,9 @@
   .c-flow .fl-amt small { font-size: 11px; font-weight: 600; white-space: nowrap; }
   .c-flow .fl-amt .neg { color: var(--red); }
   .c-flow .fl-amt small.ok { color: #12a05c; }
+  .c-flow .fl-toss { display: inline-block; margin-top: 7px; padding: 6px 11px; border-radius: 999px; background: #e8f3ff; color: #1b64da; font-size: 12.5px; font-weight: 700; text-decoration: none; }
+  .c-flow .fl-toss-miss { margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+  body.dark .c-flow .fl-toss { background: #1a2a44; color: #8ab4ff; }
   .c-flow .badge { text-align: right; line-height: 1.35; }
   .c-flow .badge.ok { background: #effaf4; color: #12a05c; }
   .c-flow .list-line .amt { text-align: right; display: grid; }
@@ -857,7 +860,7 @@
 </main>
 <div id="toast"></div>
 
-<script>window.__BUILD__="20261126153815";</script>
+<script>window.__BUILD__="20261126155550";</script>
 <script>
 (function () {
   "use strict";
@@ -1169,7 +1172,7 @@
   var NAMES = ["W_LEDGER", "W_CATS", "W_ITEMS", "W_MEMBERS", "W_PAYS", "W_OTHER", "W_HOLDINGS", "W_CARDS",
     "W_DIV_KPI", "W_DIV_MONTH", "W_DIV_BY", "W_NW_HIST", "W_GOALS", "W_PENSION", "NET_WORTH", "W_TOTAL_ASSET",
     "W_DEBT", "W_FX", "W_CASH", "W_US_VALUE", "W_KR_VALUE", "W_US_USD_RET", "INVEST_COST", "INVEST_VALUE",
-    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS", "W_MEMBER_MAIL", "W_FLOW", "W_OUTPLAN", "W_CHAT", "W_PUSH_CFG", "W_PUSH_VAPID"];
+    "INVEST_PL", "INVEST_RETURN", "W_FIXED_IN", "W_FIXED_OUT", "W_ACCOUNTS", "W_BENCH", "W_BENCH_META", "W_CMP_START_LONG", "W_CMP_START_YTD", "W_REVIEW", "W_CAT_ICON", "W_AI_KEY", "W_PHOTO_URL", "W_PHOTOS", "W_MEMBER_MAIL", "W_FLOW", "W_OUTPLAN", "W_CHAT", "W_PUSH_CFG", "W_PUSH_VAPID", "W_ACC_BANK"];
   function apiGetData() {
     var q = NAMES.map(function (x) { return "ranges=" + enc(x); }).join("&");
     return gapi("GET", "/values:batchGet?" + q + "&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER")
@@ -1219,6 +1222,8 @@
       today: todaySeoul(), me: "",
       aiKey: s_(one_raw_(V, "W_AI_KEY")).trim(),
       photoUrl: s_(one_raw_(V, "W_PHOTO_URL")).trim(),
+      // 통장 계좌번호·은행 (자산관리 B8:J22: B 계좌명 … I 계좌번호 J 은행) → 토스로 채우기
+      accBank: (V.W_ACC_BANK || []).filter(function (r) { return s_(r[0]).trim(); }).map(function (r) { r = pad_(r, 9); return { name: s_(r[0]).trim(), acct: s_(r[7]).trim(), bank: s_(r[8]).trim() }; }),
       pushCfg: s_(one_raw_(V, "W_PUSH_CFG")), pushVapid: s_(one_raw_(V, "W_PUSH_VAPID")).trim(),
       memberMails: (V.W_MEMBER_MAIL || []).map(function (r) { return s_(r[0]).trim().toLowerCase(); }),
       // 사진 탭: B날짜 C누가 D내용 E금액 F사진ID G작은사진ID H설명 I올린시각
@@ -1573,6 +1578,26 @@
     fitNums("#homeGrid .tile .v, #homeGrid .hero-side .v");
   }
 
+  // 토스로 채우기 (실험): 부족한 통장으로 토스 송금 화면을 받는 계좌·금액이 채워진 채로 열어요. 송금은 토스 앱에서 직접 확인.
+  // 계좌번호·은행 = 자산관리 탭 통장 표 I·J열 (이름표 W_ACC_BANK). 누르는 순간 '은행 계좌번호'도 클립보드에 복사(토스가 못 채울 때 붙여넣기용).
+  var TOSS_BANK = [[/국민/, "KB국민은행"], [/기업/, "IBK기업은행"], [/신한/, "신한은행"], [/우리/, "우리은행"], [/하나/, "하나은행"], [/농협/, "NH농협은행"],
+    [/카카오/, "카카오뱅크"], [/토스/, "토스뱅크"], [/케이뱅크|K뱅크/i, "케이뱅크"], [/미래에셋/, "미래에셋증권"], [/새마을/, "새마을금고"], [/우체국/, "우체국"], [/SC|제일/, "SC제일은행"]];
+  function tossFillBtn(f) {
+    var a = (D.accBank || []).filter(function (x) { return x.name === f.name; })[0];
+    var amt = Number(String(f.status).replace(/^[^,\d]*\d+\/\d+까지\s*/, "").replace(/[^\d]/g, "")) || 0;
+    if (!a) return "";
+    if (!a.acct) return '<div class="fl-toss-miss">토스로 채우려면 자산관리 탭에 이 통장 계좌번호를 적어 주세요</div>';
+    var bank = a.bank; TOSS_BANK.some(function (b) { if (b[0].test(a.bank)) { bank = b[1]; return true; } return false; });
+    var no = String(a.acct).replace(/[^\d]/g, "");
+    var href = "supertoss://send?amount=" + amt + "&bank=" + encodeURIComponent(bank) + "&accountNo=" + no + "&origin=qr";
+    return '<a class="fl-toss" href="' + esc(href) + '" data-copy="' + esc(bank + " " + no) + '">토스로 ' + num(amt) + "원 채우기 →</a>";
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest && e.target.closest(".fl-toss"); if (!t) return;
+    try { navigator.clipboard.writeText(t.dataset.copy); } catch (x) {}
+    toast("토스를 여는 중… (계좌번호도 복사해 뒀어요)");
+  });
+
   // 통장 준비: 앞으로 한 달 동안 어느 통장에서 언제 얼마 빠지는지, 모자라는 통장은 빨간색 (고정항목 탭 아래 표에서 계산)
   function flowCard() {
     var fl = (D.flow || []).filter(function (f) { return f.out > 0; });
@@ -1588,7 +1613,7 @@
         var warn = /^⚠/.test(f.status);
         var st = warn ? f.status.replace(/^⚠\s*/, "").replace(" 더 넣기", " 부족") : "충분";
         return '<div class="list-line"><div class="grow"><b>' + esc(f.name) + '</b>' +
-          '<div class="s">다음 출금 ' + esc(f.next) + " · " + esc(f.cnt) + " " + num(f.out) + "원</div></div>" +
+          '<div class="s">다음 출금 ' + esc(f.next) + " · " + esc(f.cnt) + " " + num(f.out) + "원</div>" + (warn ? tossFillBtn(f) : "") + "</div>" +
           '<div class="fl-amt num"><span class="fl-lab">현재 잔액</span><b' + (f.balance < 0 ? ' class="neg"' : "") + ">" + num(f.balance) + "원</b>" +
           '<small class="' + (warn ? "neg" : "ok") + '">' + esc(st) + "</small></div></div>";
       }).join("") +
